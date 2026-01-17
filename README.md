@@ -9,9 +9,15 @@ Dieses Repository enthält eine umfassende E2E-Test-Suite für den SVWS (Schulve
 ### Aktuelle Testabdeckung
 
 - ✅ **Anmeldung**: Admin-Benutzer kann sich erfolgreich anmelden (Datenbank-Schema "svwse2e")
-- ✅ **Navigation**: Zu Schüler-Daten-Seiten navigieren
-- ✅ **Seitenladung**: Überprüfung der korrekten Seiteninhalte
-- 🔄 **Schüler bearbeiten**: Grundgerüst vorhanden, UI-spezifische Implementierung ausstehend
+- ✅ **Navigation**: Zu Schüler-Listen navigieren
+- ✅ **Schüler-Auswahl**: Schüler aus Liste auswählen
+- ✅ **Schüler bearbeiten**: Bearbeitung mit automatischem Speichern (Nachname, Geburtsdatum, 1. Staatsangehörigkeit)
+- ✅ **Änderungen speichern**: Auto-Save funktioniert nahtlos, Änderungen persistieren sofort
+- ✅ **Automatisches Cleanup**: Testdaten werden nach Tests automatisch zurückgesetzt (optional behalten mit KEEP_TEST_DATA=true)
+- ✅ **Cross-Browser Testing**: Tests laufen auf Chromium und Firefox
+- 🔄 **Feldabdeckung erweitern**: Weitere Felder schrittweise hinzufügen
+- 🔄 **Schüler erstellen**: Geplant
+- 🔄 **Schüler löschen**: Geplant
 
 ## 🚀 Schnellstart
 
@@ -51,14 +57,67 @@ npm run test:debug
 npm run report
 ```
 
+### Testdaten-Management
+
+Die Tests verwenden einen intelligenten Reset-Mechanismus:
+
+1. **Originale Werte erfassen**: Vor jedem Test werden die ursprünglichen Werte der zu ändernden Felder gespeichert
+2. **Test ausführen**: Felder werden bearbeitet und auto-speichern automatisch
+3. **Automatisches Cleanup (Standard)**: Nach dem Test werden alle Felder auf ihre Originalwerte zurückgesetzt
+4. **Optional: Änderungen beibehalten**: Mit `KEEP_TEST_DATA=true` bleiben die Teständerungen sichtbar für manuelle Verifikation
+
+**Standard-Modus (Automatisches Reset):**
+
+```bash
+# Alle Tests ausführen - Testdaten werden automatisch zurückgesetzt
+npm test
+
+# Mit Browser-Fenster für visuelles Debugging
+npm run test:headed
+```
+
+**Daten-Beibehaltungs-Modus (für Verifikation):**
+
+```bash
+# Tests mit Beibehaltung der Änderungen (für manuelle Verifikation)
+KEEP_TEST_DATA=true npm test
+
+# Mit Browser-Fenster
+KEEP_TEST_DATA=true npm run test:headed
+
+# Oder über npm-Skript
+npm run test:keep-data
+npm run test:keep-data-headed
+```
+
+**Workflow-Beispiel:**
+
+```bash
+# 1. Führen Sie Tests mit KEEP_TEST_DATA aus
+KEEP_TEST_DATA=true npm test
+
+# 2. Überprüfen Sie manuell in der SVWS-Anwendung, dass z.B.:
+#    - Nachname auf "Testname-<timestamp>" geändert wurde
+#    - Geburtsdatum auf "2000-12-31" geändert wurde  
+#    - 1. Staatsangehörigkeit auf "jamaikanisch" geändert wurde
+
+# 3. Führen Sie normale Tests aus, um die Daten zurückzusetzen
+npm test
+
+# 4. Überprüfen Sie, dass alle Felder zu ihren Original-Werten zurückgekehrt sind
+```
+
 ### Spezifische Test-Dateien ausführen
 
 ```bash
 # Nur Schüler-Tests
-npx playwright test tests/student-edit.spec.ts
+npx playwright test tests/student-editvalues.spec.ts
 
 # Nur in Chromium
 npx playwright test --project=chromium
+
+# Nur in Firefox
+npx playwright test --project=firefox
 ```
 
 ## 🏗️ Projektstruktur
@@ -66,12 +125,33 @@ npx playwright test --project=chromium
 ```
 SVWS-E2ETests/
 ├── tests/
-│   ├── fixtures.ts          # Gemeinsame Test-Fixtures und Helper-Funktionen
-│   └── student-edit.spec.ts # Schüler-Bearbeitungs-Tests
-├── playwright.config.ts     # Playwright-Konfiguration
-├── tsconfig.json           # TypeScript-Konfiguration
-├── package.json            # Abhängigkeiten und Skripte
-└── README.md              # Diese Datei
+│   ├── fixtures.ts                 # Login und Navigations-Helper
+│   ├── test-data.ts               # Reset und Seeding-Utilities
+│   └── student-editvalues.spec.ts # Schüler-Bearbeitungs-Tests (3 Felder)
+├── playwright.config.ts           # Playwright-Konfiguration (Chromium + Firefox)
+├── tsconfig.json                 # TypeScript-Konfiguration
+├── package.json                  # Abhängigkeiten und Skripte
+└── README.md                     # Diese Datei
+```
+
+## 📝 Test-Design
+
+### Minimalist Approach (Current)
+
+Die Test-Suite folgt einem **minimalen, fokussierten Ansatz**:
+
+- **Ein Test pro Feature**: `student-editvalues.spec.ts` testet gezielt 3 kritische Felder
+- **Automatischer Speicher**: SVWS speichert Änderungen automatisch (kein manueller Save-Button)
+- **Intelligentes Reset**: Original-Werte werden vor dem Test erfasst und nach dem Test wiederhergestellt
+- **Cross-Browser**: Tests laufen auf Chromium und Firefox für maximale Abdeckung
+- **Snapshot-Verifikation**: Input-Werte werden direkt nach Speicherung verifiziert
+
+### Getestete Felder
+
+```
+✅ Nachname (Textinput)
+✅ Geburtsdatum (HTML Date Input)
+✅ 1. Staatsangehörigkeit (Combobox mit 200+ Optionen)
 ```
 
 ## ⚙️ Konfiguration
@@ -88,29 +168,34 @@ Die Tests verwenden das Datenbank-Schema "svwse2e". Stellen Sie sicher, dass:
 
 Da der Server selbstsignierte Zertifikate verwendet, ignoriert Playwright automatisch SSL-Fehler für localhost.
 
-## 🧪 Test-Struktur
+## 🗄️ Test Data Management
 
-### Fixtures
+### Auto-Reset Mechanismus
 
 ```typescript
-// Beispiel für authentifizierte Seite
-test('Beispiel Test', async ({ page }) => {
-  await page.goto('/');
-  await page.getByLabel('Datenbank-Schema').click();
-  await page.getByRole('option', { name: 'svwse2e' }).click();
-  await page.getByLabel('Benutzername').fill('Admin');
-  await page.getByLabel('Passwort').fill('');
-  await page.getByRole('button', { name: /anmelden/i }).click();
-  // Test-Logik hier...
+// Test erfasst Original-Werte BEVOR sie geändert werden
+const originalValues = {
+  nachname: 'Große-Vorspoel',
+  geburtsdatum: '2015-11-15',
+  staatsangehörigkeit: 'deutsch'
+};
+
+// Test ändert Felder (Auto-Save)
+await page.fill('[data-testid="nachname"]', 'Testname-' + timestamp);
+await page.fill('[data-testid="geburtsdatum"]', '2000-12-31');
+await selectComboboxOption(page, 'staatsangehörigkeit', 'jamaikanisch');
+
+// Nach dem Test: Automatisches Reset zu Original-Werten
+afterEach(() => {
+  resetTestData(page, originalValues); // Stellt alles wieder her
 });
 ```
 
-### Best Practices
+### Datenbank-Isolation
 
-- Verwenden Sie robuste Selektoren (Rollen, Labels, Text)
-- Vermeiden Sie fragile CSS/XPath-Selektoren
-- Testen Sie Benutzerverhalten, nicht Implementierungsdetails
-- Halten Sie Tests fokussiert auf einzelne User-Flows
+- **Test-Schema**: Alle Tests verwenden das Datenbank-Schema "svwse2e"
+- **Keine Produktions-Auswirkungen**: Testdaten beeinflussen nicht die Live-Umgebung
+- **Sauberer Zustand**: Nach jedem Test sind alle Werte zurückgesetzt (sofern KEEP_TEST_DATA !== true)
 
 ## 🔄 CI/CD Integration
 
@@ -170,19 +255,53 @@ npm run test:ui
 
 ## 📈 Erweiterung der Test-Suite
 
-### Neue Tests hinzufügen
+### Workflow zum Hinzufügen neuer Felder
 
-1. Erstellen Sie eine neue `.spec.ts` Datei in `tests/`
-2. Verwenden Sie die vorhandenen Fixtures aus `fixtures.ts`
-3. Folgen Sie dem Namensschema: `{feature}.spec.ts`
+1. **Feld zu `student-editvalues.spec.ts` hinzufügen:**
+   ```typescript
+   // Originalwert vor dem Test erfassen
+   const straße = await page.locator('[data-testid="straße"]').inputValue();
+   originalValues.straße = straße;
+   
+   // Feld im Test ändern
+   await page.fill('[data-testid="straße"]', 'Teststraße 123');
+   
+   // Wird automatisch in resetTestData wiederhergestellt
+   ```
 
-### Geplante Tests
+2. **Reset-Logik in `test-data.ts` aktualisieren:**
+   ```typescript
+   // Im resetTestData function:
+   try {
+     const straßeField = page.locator('[data-testid="straße"]');
+     if (await straßeField.isVisible()) {
+       await straßeField.fill(originalValues.straße);
+       await page.waitForTimeout(1000); // Auto-save warten
+       console.log(`✓ Restored Straße to "${originalValues.straße}"`);
+     }
+   } catch (e) {
+     console.log(`⚠ Could not restore Straße: ${e.message}`);
+   }
+   ```
 
-- [ ] Schüler erstellen
-- [ ] Schüler löschen
-- [ ] Fehlerbehandlung bei Backend-Ausfall
-- [ ] Berechtigungsprüfungen
-- [ ] Validierung von Eingabefeldern
+3. **Test ausführen und verifizieren:**
+   ```bash
+   # Mit Beibehaltung für Verifikation
+   KEEP_TEST_DATA=true npm test
+   
+   # Normal ausführen für Auto-Reset Test
+   npm test
+   ```
+
+### Geplante Feld-Erweiterungen
+
+- [ ] Straße
+- [ ] Wohnort / Gemeinde
+- [ ] PLZ
+- [ ] E-Mail
+- [ ] Telefon
+- [ ] Geschlecht
+- [ ] Religiöse Zugehörigkeit
 
 ## 🤝 Beitrag
 

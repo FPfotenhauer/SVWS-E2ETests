@@ -254,6 +254,44 @@ export async function resetTestData(page: any, originalValues: any = {}) {
           }
         }
 
+        // Restore 2. Staatsangehörigkeit (combobox)
+        if (originalValues.hasOwnProperty('staatsangehoerigkeit2')) {
+          const nationField2 = page.getByLabel(/2\.\s*staatsangehörigkeit|zweit.*staatsangehörigkeit|second.*nationality|citizenship.*2/i).first();
+          try {
+            if (await nationField2.isVisible({ timeout: 500 })) {
+              if (originalValues.staatsangehoerigkeit2) {
+                // Original had a value: restore it by clicking and selecting
+                await nationField2.click();
+                await page.waitForTimeout(300);
+                const options = page.getByRole('option');
+                const optCount = await options.count();
+                console.log(`Looking for option "${originalValues.staatsangehoerigkeit2}" among ${optCount} options`);
+                let found = false;
+                for (let j = 0; j < optCount; j++) {
+                  const opt = options.nth(j);
+                  const optText = await opt.textContent().catch(() => '');
+                  if (optText && optText.toLowerCase().includes(String(originalValues.staatsangehoerigkeit2).toLowerCase())) {
+                    await opt.click();
+                    found = true;
+                    console.log(`✓ Restored 2. Staatsangehörigkeit to "${originalValues.staatsangehoerigkeit2}"`);
+                    break;
+                  }
+                }
+                if (!found) {
+                  console.log(`Could not find option for "${originalValues.staatsangehoerigkeit2}" - will skip`);
+                }
+              } else {
+                // Original was empty: skip clearing (known UI limitation - X button not reliably clickable via automation)
+                console.log('⚠ 2. Staatsangehörigkeit was originally empty - skipping clear (UI limitation)');
+              }
+            } else {
+              console.log('2. Staatsangehörigkeit field not visible for restore');
+            }
+          } catch (err) {
+            console.log(`Error restoring 2. Staatsangehörigkeit: ${err}`);
+          }
+        }
+
         // Restore Straße
         if (originalValues.hasOwnProperty('strasse')) {
           const streetField = page.getByLabel(/straße|strasse|street/i).first();

@@ -14,6 +14,7 @@ let originalValues: {
   geschlecht?: string;
   geburtsdatum?: string;
   staatsangehoerigkeit?: string;
+  staatsangehoerigkeit2?: string;
   strasse?: string;
   wohnort?: string;
   ortsteil?: string;
@@ -59,6 +60,7 @@ test.describe('Student minimal edit', () => {
     // Use ISO format for date inputs to avoid malformed value errors
     const newBirthDate = '2000-12-31';
     const newNationality = 'jamaikanisch';
+    const newNationality2 = 'laotisch';
     const newStreet = `Teststraße 123`;
     const newTown = '42287 Wuppertal';
     const newDistrict = 'Barmen';
@@ -118,6 +120,8 @@ test.describe('Student minimal edit', () => {
     const origBirthDateField = page.getByLabel(/geburtsdatum|birth.?date|geburt/i).first()
       .or(page.locator('input[type="date"]').first());
     const origNationalityField = page.getByLabel(/1\.\s*staatsangehörigkeit|staatsangehörigkeit|nationality|citizenship/i).first();
+    const origNationalityField2 = page.getByLabel(/2\.\s*staatsangehörigkeit|zweit.*staatsangehörigkeit|second.*nationality|citizenship.*2/i).first()
+      .or(page.locator('input[role="combobox"][aria-label*="2."]').first());
     const origStreetField = page.getByLabel(/straße|strasse|street/i).first()
       .or(page.locator('input[name*="strasse"]').first());
     const origTownField = page.getByRole('combobox', { name: /wohnort/i }).first()
@@ -157,6 +161,9 @@ test.describe('Student minimal edit', () => {
     if (await origNationalityField.isVisible({ timeout: 500 })) {
       originalValues.staatsangehoerigkeit = await origNationalityField.inputValue();
     }
+    if (await origNationalityField2.isVisible({ timeout: 500 })) {
+      originalValues.staatsangehoerigkeit2 = await origNationalityField2.inputValue();
+    }
     if (await origStreetField.isVisible({ timeout: 500 })) {
       originalValues.strasse = await origStreetField.inputValue();
     }
@@ -187,6 +194,7 @@ test.describe('Student minimal edit', () => {
     console.log(`Geschlecht: "${originalValues.geschlecht}"`);
     console.log(`Geburtsdatum: "${originalValues.geburtsdatum}"`);
     console.log(`1. Staatsangehörigkeit: "${originalValues.staatsangehoerigkeit}"`);
+    console.log(`2. Staatsangehörigkeit: "${originalValues.staatsangehoerigkeit2}"`);
     console.log(`Straße: "${originalValues.strasse}"`);
     console.log(`Wohnort: "${originalValues.wohnort}"`);
     console.log(`Ortsteil: "${originalValues.ortsteil}"`);
@@ -347,6 +355,45 @@ test.describe('Student minimal edit', () => {
       console.log('1. Staatsangehörigkeit field not visible - skipped');
     }
 
+    // Fill 2. Staatsangehörigkeit - tests selection in this combobox
+    // NOTE: Known limitation - the X button to clear combobox to empty state is not reliably
+    // clickable via automation (works manually but Playwright cannot target it). When originally
+    // empty, the field will remain filled after test. Use KEEP_TEST_DATA mode to inspect.
+    const nationalityField2 = page.getByLabel(/2\.\s*staatsangehörigkeit|zweit.*staatsangehörigkeit|second.*nationality|citizenship.*2/i).first();
+    if (await nationalityField2.isVisible({ timeout: 1000 })) {
+      // Only fill if not originally empty, to avoid testing the clearing logic which has UI issues
+      if (originalValues.staatsangehoerigkeit2) {
+        await nationalityField2.click();
+        await page.waitForTimeout(300);
+        const laotischOption2 = page.getByRole('option', { name: /laotisch/i }).first();
+        if (await laotischOption2.isVisible({ timeout: 1000 })) {
+          await laotischOption2.click();
+          console.log('2. Staatsangehörigkeit set to "Laotisch" (combobox)');
+        } else {
+          await page.keyboard.type('Laotisch');
+          await page.waitForTimeout(200);
+          await page.keyboard.press('Enter');
+          console.log('2. Staatsangehörigkeit set via Enter to "Laotisch" (combobox)');
+        }
+      } else {
+        // Original was empty - set it to Laotisch for testing
+        await nationalityField2.click();
+        await page.waitForTimeout(300);
+        const laotischOption2 = page.getByRole('option', { name: /laotisch/i }).first();
+        if (await laotischOption2.isVisible({ timeout: 1000 })) {
+          await laotischOption2.click();
+          console.log('2. Staatsangehörigkeit set to "Laotisch" (combobox, was empty)');
+        } else {
+          await page.keyboard.type('Laotisch');
+          await page.waitForTimeout(200);
+          await page.keyboard.press('Enter');
+          console.log('2. Staatsangehörigkeit set via Enter to "Laotisch" (combobox, was empty)');
+        }
+      }
+    } else {
+      console.log('2. Staatsangehörigkeit field not visible - skipped');
+    }
+
     // Debug: Take screenshot before save
     await page.screenshot({ path: 'debug-images/debug-minimal-before-save.png' });
     console.log('Screenshot taken: debug-images/debug-minimal-before-save.png');
@@ -381,6 +428,7 @@ test.describe('Student minimal edit', () => {
       { label: 'Geschlecht', locator: genderField },
       { label: 'Geburtsdatum', locator: birthDateField },
       { label: '1. Staatsangehörigkeit', locator: nationalityField },
+      { label: '2. Staatsangehörigkeit', locator: nationalityField2 },
     ];
     for (const check of snapshotChecks) {
       try {

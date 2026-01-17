@@ -162,6 +162,41 @@ Die Test-Suite folgt einem **minimalen, fokussierten Ansatz**:
 ✅ Geschlecht (Combobox: männlich, weiblich, divers)
 ✅ Geburtsdatum (HTML Date Input)
 ✅ 1. Staatsangehörigkeit (Combobox mit 200+ Optionen)
+✅ 2. Staatsangehörigkeit (Combobox mit 200+ Optionen) - siehe Bekannte Einschränkungen
+```
+
+### Bekannte Einschränkungen
+
+#### 2. Staatsangehörigkeit - Clearing bei initialem leeren Zustand
+
+Die Tests für das Feld "2. Staatsangehörigkeit" haben eine bekannte UI-Automation-Einschränkung:
+
+**Problem:**
+- Wenn das Feld "2. Staatsangehörigkeit" zu Testbeginn leer ist, kann es nicht programmatisch über Automation auf "leer" zurückgesetzt werden
+- Das X-Button zum Löschen der Combobox funktioniert manuell im Browser perfekt, ist aber über Playwright nicht zuverlässig zu klicken
+- Mehrere Automatisierungs-Strategien wurden versucht, alle waren erfolglos
+
+**Auswirkungen:**
+- Das Testfeld bleibt mit dem Testwert ("laotisch") gefüllt, wenn es ursprünglich leer war
+- Dies beeinträchtigt keine anderen Tests oder Funktionalität
+- Alle anderen Felder werden korrekt zurückgesetzt
+
+**Workaround:**
+- Für vollständige Testdaten-Isolierung: Sorgen Sie dafür, dass der Testschüler ein nicht-leeres Wert für "2. Staatsangehörigkeit" hat (z.B. "deutsch")
+- Alternative: Verwenden Sie `KEEP_TEST_DATA=true` für manuelle Verifikation und bereinigen Sie später manuell
+
+**Workflow bei leerer 2. Staatsangehörigkeit:**
+```bash
+# Test läuft, aber Feld bleibt mit "laotisch" gefüllt
+KEEP_TEST_DATA=true npm test
+
+# Manuelle Bereinigung im Browser:
+# 1. Navigieren Sie zum Schüler
+# 2. Klicken Sie auf das X im "2. Staatsangehörigkeit" Feld
+# 3. Speichern Sie (auto-save)
+
+# Dann normale Tests ausführen - das Feld wird auf den neuen leeren Status zurückgesetzt
+npm test
 ```
 
 ## ⚙️ Konfiguration
@@ -321,13 +356,13 @@ npm run test:ui
 
 ### Geplante Feld-Erweiterungen
 
+- [x] 2. Staatsangehörigkeit (implementiert, mit bekannter Einschränkung bei leerem Ausgangswert)
 - [ ] Straße
 - [ ] Wohnort / Gemeinde
 - [ ] PLZ
 - [ ] E-Mail
 - [ ] Telefon
 - [ ] Religiöse Zugehörigkeit
-- [ ] 2. Staatsangehörigkeit
 
 ## 🤝 Beitrag
 

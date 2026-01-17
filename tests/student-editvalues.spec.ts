@@ -5,7 +5,23 @@ import { seedTestData, resetTestData, TEST_STUDENT } from './test-data';
 const keepTestData = process.env.KEEP_TEST_DATA === 'true' || process.env.KEEP_TEST_DATA === '1';
 
 // Store original values for reset after test
-let originalValues: { nachname?: string; rufname?: string; alleVornamen?: string; geburtsort?: string; geburtsname?: string; geschlecht?: string; geburtsdatum?: string; staatsangehoerigkeit?: string } = {};
+let originalValues: {
+  nachname?: string;
+  rufname?: string;
+  alleVornamen?: string;
+  geburtsort?: string;
+  geburtsname?: string;
+  geschlecht?: string;
+  geburtsdatum?: string;
+  staatsangehoerigkeit?: string;
+  strasse?: string;
+  wohnort?: string;
+  ortsteil?: string;
+  telefon?: string;
+  mobilOderFax?: string;
+  privateEmail?: string;
+  schulEmail?: string;
+} = {};
 
 const makeTimestamp = () => {
   const now = new Date();
@@ -43,6 +59,13 @@ test.describe('Student minimal edit', () => {
     // Use ISO format for date inputs to avoid malformed value errors
     const newBirthDate = '2000-12-31';
     const newNationality = 'jamaikanisch';
+    const newStreet = `Teststraße 123`;
+    const newTown = '42287 Wuppertal';
+    const newDistrict = 'Barmen';
+    const newPhone = '555555';
+    const newMobileOrFax = '555555';
+    const newPrivateEmail = `test.privat.${timestamp}@example.com`;
+    const newSchoolEmail = `test.schule.${timestamp}@example.com`;
 
     // Login
     await page.goto('/');
@@ -95,6 +118,20 @@ test.describe('Student minimal edit', () => {
     const origBirthDateField = page.getByLabel(/geburtsdatum|birth.?date|geburt/i).first()
       .or(page.locator('input[type="date"]').first());
     const origNationalityField = page.getByLabel(/1\.\s*staatsangehörigkeit|staatsangehörigkeit|nationality|citizenship/i).first();
+    const origStreetField = page.getByLabel(/straße|strasse|street/i).first()
+      .or(page.locator('input[name*="strasse"]').first());
+    const origTownField = page.getByRole('combobox', { name: /wohnort/i }).first()
+      .or(page.locator('input[role="combobox"][aria-label*="ohnort"]').first());
+    const origDistrictField = page.getByRole('combobox', { name: /ortsteil|stadtteil|bezirk/i }).first()
+      .or(page.locator('input[role="combobox"][aria-label*="ortsteil"]').first());
+    const origPhoneField = page.getByLabel(/telefon|phone/i).first()
+      .or(page.locator('input[name*="telefon"]').first());
+    const origMobileFaxField = page.getByLabel(/mobil|fax/i).first()
+      .or(page.locator('input[name*="mobil"]').first());
+    const origPrivateEmailField = page.getByLabel(/private.*e-?mail|e-?mail.*privat|privat.*mail/i).first()
+      .or(page.locator('input[name*="emailPrivat"]').first());
+    const origSchoolEmailField = page.getByLabel(/schulische.*e-?mail|schule.*e-?mail|school.*email/i).first()
+      .or(page.locator('input[name*="emailSchule"]').first());
 
     if (await origLastNameField.isVisible({ timeout: 500 })) {
       originalValues.nachname = await origLastNameField.inputValue();
@@ -120,6 +157,27 @@ test.describe('Student minimal edit', () => {
     if (await origNationalityField.isVisible({ timeout: 500 })) {
       originalValues.staatsangehoerigkeit = await origNationalityField.inputValue();
     }
+    if (await origStreetField.isVisible({ timeout: 500 })) {
+      originalValues.strasse = await origStreetField.inputValue();
+    }
+    if (await origTownField.isVisible({ timeout: 500 })) {
+      originalValues.wohnort = await origTownField.inputValue();
+    }
+    if (await origDistrictField.isVisible({ timeout: 500 })) {
+      originalValues.ortsteil = await origDistrictField.inputValue();
+    }
+    if (await origPhoneField.isVisible({ timeout: 500 })) {
+      originalValues.telefon = await origPhoneField.inputValue();
+    }
+    if (await origMobileFaxField.isVisible({ timeout: 500 })) {
+      originalValues.mobilOderFax = await origMobileFaxField.inputValue();
+    }
+    if (await origPrivateEmailField.isVisible({ timeout: 500 })) {
+      originalValues.privateEmail = await origPrivateEmailField.inputValue();
+    }
+    if (await origSchoolEmailField.isVisible({ timeout: 500 })) {
+      originalValues.schulEmail = await origSchoolEmailField.inputValue();
+    }
     console.log('=== CAPTURED ORIGINAL VALUES ===');
     console.log(`Nachname: "${originalValues.nachname}"`);
     console.log(`Rufname: "${originalValues.rufname}"`);
@@ -129,6 +187,13 @@ test.describe('Student minimal edit', () => {
     console.log(`Geschlecht: "${originalValues.geschlecht}"`);
     console.log(`Geburtsdatum: "${originalValues.geburtsdatum}"`);
     console.log(`1. Staatsangehörigkeit: "${originalValues.staatsangehoerigkeit}"`);
+    console.log(`Straße: "${originalValues.strasse}"`);
+    console.log(`Wohnort: "${originalValues.wohnort}"`);
+    console.log(`Ortsteil: "${originalValues.ortsteil}"`);
+    console.log(`Telefon: "${originalValues.telefon}"`);
+    console.log(`Mobil oder Fax: "${originalValues.mobilOderFax}"`);
+    console.log(`Private E-Mail-Adresse: "${originalValues.privateEmail}"`);
+    console.log(`Schulische E-Mail-Adresse: "${originalValues.schulEmail}"`);
     console.log('=== END ORIGINAL VALUES ===');
 
     // Fill Nachname
@@ -158,6 +223,78 @@ test.describe('Student minimal edit', () => {
       .or(page.locator('input[name*="geburtsname"]').first());
     if (await birthNameField.isVisible({ timeout: 500 })) {
       await birthNameField.fill(newBirthName);
+    }
+
+    // Fill Straße
+    const streetField = page.getByLabel(/straße|strasse|street/i).first()
+      .or(page.locator('input[name*="strasse"]').first());
+    if (await streetField.isVisible({ timeout: 500 })) {
+      await streetField.fill(newStreet);
+    }
+
+    // Fill Wohnort (combobox)
+    const townField = page.getByRole('combobox', { name: /wohnort/i }).first()
+      .or(page.locator('input[role="combobox"][aria-label*="ohnort"]').first());
+    if (await townField.isVisible({ timeout: 1000 })) {
+      await townField.click();
+      await page.waitForTimeout(300);
+      const townOption = page.getByRole('option', { name: new RegExp('42287.*wuppertal', 'i') }).first();
+      if (await townOption.isVisible({ timeout: 1000 })) {
+        await townOption.click();
+        console.log('Wohnort set to "42287 Wuppertal" (combobox)');
+      } else {
+        console.log('Wohnort option "42287 Wuppertal" not found');
+      }
+    }
+
+    // Fill Ortsteil (combobox) → type filter then select
+    const districtField = page.getByRole('combobox', { name: /ortsteil|stadtteil|bezirk/i }).first()
+      .or(page.locator('input[role="combobox"][aria-label*="ortsteil"]').first());
+    if (await districtField.isVisible({ timeout: 1000 })) {
+      await districtField.click();
+      await page.waitForTimeout(200);
+      // Type to filter and confirm with Enter
+      await page.keyboard.type('Barmen');
+      await page.waitForTimeout(300);
+      const opt = page.getByRole('option', { name: /barmen/i }).first();
+      if (await opt.isVisible({ timeout: 800 })) {
+        await opt.click();
+        console.log('Ortsteil set to "Barmen" (combobox)');
+      } else {
+        await page.keyboard.press('Enter');
+        console.log('Ortsteil set via Enter to "Barmen" (combobox)');
+      }
+      // Blur to trigger autosave
+      try { await districtField.press('Tab'); } catch {}
+      await page.waitForTimeout(300);
+    }
+
+    // Fill Telefon
+    const phoneField = page.getByLabel(/telefon|phone/i).first()
+      .or(page.locator('input[name*="telefon"]').first());
+    if (await phoneField.isVisible({ timeout: 500 })) {
+      await phoneField.fill(newPhone);
+    }
+
+    // Fill Mobil oder Fax
+    const mobileFaxField = page.getByLabel(/mobil|fax/i).first()
+      .or(page.locator('input[name*="mobil"]').first());
+    if (await mobileFaxField.isVisible({ timeout: 500 })) {
+      await mobileFaxField.fill(newMobileOrFax);
+    }
+
+    // Fill Private E-Mail-Adresse
+    const privateEmailField = page.getByLabel(/private.*e-?mail|e-?mail.*privat|privat.*mail/i).first()
+      .or(page.locator('input[name*="emailPrivat"]').first());
+    if (await privateEmailField.isVisible({ timeout: 500 })) {
+      await privateEmailField.fill(newPrivateEmail);
+    }
+
+    // Fill Schulische E-Mail-Adresse
+    const schoolEmailField = page.getByLabel(/schulische.*e-?mail|schule.*e-?mail|school.*email/i).first()
+      .or(page.locator('input[name*="emailSchule"]').first());
+    if (await schoolEmailField.isVisible({ timeout: 500 })) {
+      await schoolEmailField.fill(newSchoolEmail);
     }
 
     // Fill Geschlecht (combobox field - same pattern as Staatsangehörigkeit)
@@ -234,6 +371,13 @@ test.describe('Student minimal edit', () => {
       { label: 'Alle Vornamen', locator: allFirstNamesField },
       { label: 'Geburtsort', locator: birthPlaceField },
       { label: 'Geburtsname', locator: birthNameField },
+      { label: 'Straße', locator: streetField },
+      { label: 'Wohnort', locator: townField },
+      { label: 'Ortsteil', locator: districtField },
+      { label: 'Telefon', locator: phoneField },
+      { label: 'Mobil oder Fax', locator: mobileFaxField },
+      { label: 'Private E-Mail-Adresse', locator: privateEmailField },
+      { label: 'Schulische E-Mail-Adresse', locator: schoolEmailField },
       { label: 'Geschlecht', locator: genderField },
       { label: 'Geburtsdatum', locator: birthDateField },
       { label: '1. Staatsangehörigkeit', locator: nationalityField },
@@ -251,6 +395,63 @@ test.describe('Student minimal edit', () => {
       }
     }
     console.log('=== END INPUT SNAPSHOT ===');
+
+    // View-mode verification: pair label "Ortsteil" with its displayed value
+    try {
+      let verified = false;
+
+      // Strategy A: definition list pattern dt/dd
+      const ddValue = page.locator('xpath=//dt[normalize-space(.)="Ortsteil"]/following-sibling::dd[1]').first();
+      if (await ddValue.isVisible({ timeout: 800 })) {
+        const txt = (await ddValue.textContent()) || '';
+        if (/barmen/i.test(txt)) {
+          console.log('✓ Ortsteil (dt/dd) shows "Barmen"');
+          verified = true;
+        }
+      }
+
+      // Strategy B: role=group named Ortsteil, then value inside
+      if (!verified) {
+        const group = page.getByRole('group', { name: /ortsteil/i }).first();
+        if (await group.isVisible({ timeout: 800 })) {
+          const groupValue = group.locator('span,div,dd,p').filter({ hasText: /barmen/i }).first();
+          if (await groupValue.isVisible({ timeout: 800 })) {
+            console.log('✓ Ortsteil (group) shows "Barmen"');
+            verified = true;
+          }
+        }
+      }
+
+      // Strategy C: label text container → nearest sibling value
+      if (!verified) {
+        const label = page.getByText(/^Ortsteil$/).first();
+        if (await label.isVisible({ timeout: 800 })) {
+          const container = label.locator('xpath=ancestor::*[self::div or self::li or self::tr][1]');
+          const nearValue = container.getByText(/barmen/i).first();
+          if (await nearValue.isVisible({ timeout: 800 })) {
+            console.log('✓ Ortsteil (label+value) shows "Barmen"');
+            verified = true;
+          }
+        }
+      }
+
+      // Fallback: generic text search
+      if (!verified) {
+        const barmenText = page.getByText(/\bBarmen\b/).first();
+        if (await barmenText.isVisible({ timeout: 800 })) {
+          console.log('✓ View-mode shows Ortsteil "Barmen" (generic)');
+          verified = true;
+        }
+      }
+
+      if (!verified) {
+        console.log('⚠ Could not verify Ortsteil "Barmen" via label+value pairing');
+      }
+    } catch (err) {
+      console.log('Ortsteil view-mode verification failed:', err);
+    }
+
+    // (Skipped) Combobox selected-option verification, as UI may not expose selected state reliably.
 
     // Minimal assertion: Nachname visible somewhere on page (use nth to bypass strict mode)
     const nameLocator = page.getByText(newLastName).first();

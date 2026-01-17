@@ -2,5 +2,6 @@ node_modules/
 /test-results/
 /playwright-report/
 /debug-images/
+/database/
 *.log
 .DS_Store

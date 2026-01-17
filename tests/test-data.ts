@@ -253,6 +253,169 @@ export async function resetTestData(page: any, originalValues: any = {}) {
             console.log(`Error restoring Staatsangehörigkeit: ${err}`);
           }
         }
+
+        // Restore Straße
+        if (originalValues.hasOwnProperty('strasse')) {
+          const streetField = page.getByLabel(/straße|strasse|street/i).first();
+          try {
+            if (await streetField.isVisible({ timeout: 500 })) {
+              await streetField.clear();
+              await streetField.fill(originalValues.strasse || '');
+              console.log(`✓ Restored Straße to "${originalValues.strasse}"`);
+            } else {
+              console.log('Straße field not visible for restore');
+            }
+          } catch (err) {
+            console.log(`Error restoring Straße: ${err}`);
+          }
+        }
+
+        // Restore Wohnort (combobox)
+        if (originalValues.hasOwnProperty('wohnort')) {
+          const townField = page.getByRole('combobox', { name: /wohnort/i }).first()
+            .or(page.locator('input[role="combobox"][aria-label*="ohnort"]').first());
+          try {
+            if (await townField.isVisible({ timeout: 500 })) {
+              await townField.click();
+              await page.waitForTimeout(300);
+              let found = false;
+              const options = page.getByRole('option');
+              const optCount = await options.count();
+              console.log(`Looking for Wohnort option "${originalValues.wohnort}" among ${optCount} options`);
+              for (let j = 0; j < optCount; j++) {
+                const opt = options.nth(j);
+                const optText = await opt.textContent().catch(() => '');
+                if (optText && optText.toLowerCase().includes(String(originalValues.wohnort).toLowerCase())) {
+                  await opt.click();
+                  found = true;
+                  console.log(`✓ Restored Wohnort to "${originalValues.wohnort}"`);
+                  break;
+                }
+              }
+              if (!found) {
+                console.log(`Could not find option for Wohnort "${originalValues.wohnort}" - will skip`);
+              }
+            } else {
+              console.log('Wohnort field not visible for restore');
+            }
+          } catch (err) {
+            console.log(`Error restoring Wohnort: ${err}`);
+          }
+        }
+
+        // Restore Ortsteil (combobox)
+        if (originalValues.hasOwnProperty('ortsteil')) {
+          const districtField = page.getByRole('combobox', { name: /ortsteil|stadtteil|bezirk/i }).first()
+            .or(page.locator('input[role="combobox"][aria-label*="ortsteil"]').first());
+          try {
+            if (await districtField.isVisible({ timeout: 500 })) {
+              await districtField.click();
+              await page.waitForTimeout(300);
+              let found = false;
+              const options = page.getByRole('option');
+              const optCount = await options.count();
+              console.log(`Looking for Ortsteil option "${originalValues.ortsteil}" among ${optCount} options`);
+              for (let j = 0; j < optCount; j++) {
+                const opt = options.nth(j);
+                const optText = await opt.textContent().catch(() => '');
+                if (optText && optText.toLowerCase().includes(String(originalValues.ortsteil).toLowerCase())) {
+                  await opt.click();
+                  found = true;
+                  console.log(`✓ Restored Ortsteil to "${originalValues.ortsteil}"`);
+                  break;
+                }
+              }
+              if (!found) {
+                console.log(`Could not find option for Ortsteil "${originalValues.ortsteil}" - will skip`);
+              }
+            } else {
+              console.log('Ortsteil field not visible for restore');
+            }
+          } catch (err) {
+            console.log(`Error restoring Ortsteil: ${err}`);
+          }
+        }
+
+        // Restore Telefon
+        if (originalValues.hasOwnProperty('telefon')) {
+          const phoneField = page.getByLabel(/telefon|phone/i).first();
+          try {
+            if (await phoneField.isVisible({ timeout: 500 })) {
+              await phoneField.clear();
+              await phoneField.fill(originalValues.telefon || '');
+              console.log(`✓ Restored Telefon to "${originalValues.telefon}"`);
+            } else {
+              console.log('Telefon field not visible for restore');
+            }
+          } catch (err) {
+            console.log(`Error restoring Telefon: ${err}`);
+          }
+        }
+
+        // Restore Mobil oder Fax
+        if (originalValues.hasOwnProperty('mobilOderFax')) {
+          const mobileFaxField = page.getByLabel(/mobil|fax/i).first();
+          try {
+            if (await mobileFaxField.isVisible({ timeout: 500 })) {
+              await mobileFaxField.clear();
+              await mobileFaxField.fill(originalValues.mobilOderFax || '');
+              console.log(`✓ Restored Mobil oder Fax to "${originalValues.mobilOderFax}"`);
+            } else {
+              console.log('Mobil oder Fax field not visible for restore');
+            }
+          } catch (err) {
+            console.log(`Error restoring Mobil oder Fax: ${err}`);
+          }
+        }
+
+        // Restore Private E-Mail-Adresse
+        if (originalValues.hasOwnProperty('privateEmail')) {
+          const privateEmailField = page.getByRole('textbox', { name: /private.*e-?mail|e-?mail.*privat|privat.*mail/i }).first()
+            .or(page.getByLabel(/private.*e-?mail|e-?mail.*privat|privat.*mail/i).first())
+            .or(page.locator('input[name*="emailPrivat"]').first());
+          try {
+            if (await privateEmailField.isVisible({ timeout: 500 })) {
+              await privateEmailField.clear();
+              await privateEmailField.fill(originalValues.privateEmail || '');
+              // Trigger blur to ensure auto-save
+              try { await privateEmailField.press('Tab'); } catch {}
+              await page.waitForTimeout(300);
+              console.log(`✓ Restored Private E-Mail-Adresse to "${originalValues.privateEmail}"`);
+            } else {
+              console.log('Private E-Mail-Adresse field not visible for restore');
+            }
+          } catch (err) {
+            console.log(`Error restoring Private E-Mail-Adresse: ${err}`);
+          }
+        }
+
+        // Restore Schulische E-Mail-Adresse
+        if (originalValues.hasOwnProperty('schulEmail')) {
+          const schoolEmailField = page.getByRole('textbox', { name: /schulische.*e-?mail/i }).first()
+            .or(page.getByLabel(/schulische.*e-?mail|schule.*e-?mail|school.*email/i).first())
+            .or(page.locator('input[name*="emailSchule"]').first());
+          try {
+            if (await schoolEmailField.isVisible({ timeout: 500 })) {
+              await schoolEmailField.clear();
+              await schoolEmailField.fill(originalValues.schulEmail || '');
+              // Trigger blur to ensure auto-save
+              try { await schoolEmailField.press('Tab'); } catch {}
+              await page.waitForTimeout(300);
+              console.log(`✓ Restored Schulische E-Mail-Adresse to "${originalValues.schulEmail}"`);
+              // Verify restoration
+              const currentSchoolEmail = await schoolEmailField.inputValue();
+              if (String(currentSchoolEmail) === String(originalValues.schulEmail || '')) {
+                console.log('✓ Verified Schulische E-Mail-Adresse restored correctly');
+              } else {
+                console.log(`⚠ Schulische E-Mail verification mismatch: now "${currentSchoolEmail}", expected "${originalValues.schulEmail}"`);
+              }
+            } else {
+              console.log('Schulische E-Mail-Adresse field not visible for restore');
+            }
+          } catch (err) {
+            console.log(`Error restoring Schulische E-Mail-Adresse: ${err}`);
+          }
+        }
         
         // Auto-save should trigger, wait a bit
         await page.waitForTimeout(1000);

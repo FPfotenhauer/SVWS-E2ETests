@@ -116,6 +116,59 @@ export async function resetTestData(page: any, originalValues: any = {}) {
             console.log(`Error restoring Rufname: ${err}`);
           }
         }
+
+        // Restore Alle Vornamen
+        if (originalValues.hasOwnProperty('alleVornamen')) {
+          const alleVornamenField = page.getByLabel(/alle vornamen|all first names|all given names/i).first();
+          try {
+            if (await alleVornamenField.isVisible({ timeout: 500 })) {
+              await alleVornamenField.clear();
+              await alleVornamenField.fill(originalValues.alleVornamen || '');
+              console.log(`✓ Restored Alle Vornamen to "${originalValues.alleVornamen}"`);
+            } else {
+              console.log('Alle Vornamen field not visible for restore');
+            }
+          } catch (err) {
+            console.log(`Error restoring Alle Vornamen: ${err}`);
+          }
+        }
+
+        // Restore Geschlecht (combobox field - same pattern as Staatsangehörigkeit)
+        if (originalValues.hasOwnProperty('geschlecht')) {
+          const genderField = page.getByLabel(/geschlecht|gender|sex/i).first()
+            .or(page.locator('input[role="combobox"][aria-label*="eschlecht"]').first());
+          try {
+            if (await genderField.isVisible({ timeout: 500 })) {
+              await genderField.click();
+              await page.waitForTimeout(300);
+              
+              // Try to find and click the original option using the stored value directly
+              let found = false;
+              const options = page.getByRole('option');
+              const optCount = await options.count();
+              
+              console.log(`Looking for gender option "${originalValues.geschlecht}" among ${optCount} options`);
+              for (let j = 0; j < optCount; j++) {
+                const opt = options.nth(j);
+                const optText = await opt.textContent().catch(() => '');
+                if (optText && optText.toLowerCase().includes(originalValues.geschlecht.toLowerCase())) {
+                  await opt.click();
+                  found = true;
+                  console.log(`✓ Restored Geschlecht to "${originalValues.geschlecht}"`);
+                  break;
+                }
+              }
+              
+              if (!found) {
+                console.log(`Could not find option for Geschlecht "${originalValues.geschlecht}" - will skip`);
+              }
+            } else {
+              console.log('Geschlecht field not visible for restore');
+            }
+          } catch (err) {
+            console.log(`Error restoring Geschlecht: ${err}`);
+          }
+        }
         
         // Restore Geburtsdatum
         if (originalValues.geburtsdatum) {

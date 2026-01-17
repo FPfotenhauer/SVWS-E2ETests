@@ -5,7 +5,7 @@ import { seedTestData, resetTestData, TEST_STUDENT } from './test-data';
 const keepTestData = process.env.KEEP_TEST_DATA === 'true' || process.env.KEEP_TEST_DATA === '1';
 
 // Store original values for reset after test
-let originalValues: { nachname?: string; rufname?: string; geburtsdatum?: string; staatsangehoerigkeit?: string } = {};
+let originalValues: { nachname?: string; rufname?: string; alleVornamen?: string; geschlecht?: string; geburtsdatum?: string; staatsangehoerigkeit?: string } = {};
 
 const makeTimestamp = () => {
   const now = new Date();
@@ -32,10 +32,12 @@ test.describe('Student minimal edit', () => {
     }
   });
 
-  test('Edit Nachname, Rufname, Geburtsdatum, 1. Staatsangehörigkeit', async ({ page }) => {
+  test('Edit Nachname, Rufname, Alle Vornamen, Geschlecht, Geburtsdatum, 1. Staatsangehörigkeit', async ({ page }) => {
     const timestamp = makeTimestamp();
     const newLastName = `Testname-${timestamp}`;
     const newFirstName = `Testfname-${timestamp}`;
+    const newAllFirstNames = `TestAllNames-${timestamp}`;
+    const newGender = 'd'; // divers - will select based on current value
     // Use ISO format for date inputs to avoid malformed value errors
     const newBirthDate = '2000-12-31';
     const newNationality = 'jamaikanisch';
@@ -80,6 +82,10 @@ test.describe('Student minimal edit', () => {
       .or(page.locator('input[name*="nachname"]').first());
     const origFirstNameField = page.getByLabel(/rufname|given name|first name/i).first()
       .or(page.locator('input[name*="rufname"]').first());
+    const origAllFirstNamesField = page.getByLabel(/alle vornamen|all first names|all given names/i).first()
+      .or(page.locator('input[name*="alleVornamen"]').first());
+    const origGenderField = page.getByLabel(/geschlecht|gender|sex/i).first()
+      .or(page.locator('select[name*="geschlecht"]').first());
     const origBirthDateField = page.getByLabel(/geburtsdatum|birth.?date|geburt/i).first()
       .or(page.locator('input[type="date"]').first());
     const origNationalityField = page.getByLabel(/1\.\s*staatsangehörigkeit|staatsangehörigkeit|nationality|citizenship/i).first();
@@ -90,6 +96,12 @@ test.describe('Student minimal edit', () => {
     if (await origFirstNameField.isVisible({ timeout: 500 })) {
       originalValues.rufname = await origFirstNameField.inputValue();
     }
+    if (await origAllFirstNamesField.isVisible({ timeout: 500 })) {
+      originalValues.alleVornamen = await origAllFirstNamesField.inputValue();
+    }
+    if (await origGenderField.isVisible({ timeout: 500 })) {
+      originalValues.geschlecht = await origGenderField.inputValue();
+    }
     if (await origBirthDateField.isVisible({ timeout: 500 })) {
       originalValues.geburtsdatum = await origBirthDateField.inputValue();
     }
@@ -99,6 +111,8 @@ test.describe('Student minimal edit', () => {
     console.log('=== CAPTURED ORIGINAL VALUES ===');
     console.log(`Nachname: "${originalValues.nachname}"`);
     console.log(`Rufname: "${originalValues.rufname}"`);
+    console.log(`Alle Vornamen: "${originalValues.alleVornamen}"`);
+    console.log(`Geschlecht: "${originalValues.geschlecht}"`);
     console.log(`Geburtsdatum: "${originalValues.geburtsdatum}"`);
     console.log(`1. Staatsangehörigkeit: "${originalValues.staatsangehoerigkeit}"`);
     console.log('=== END ORIGINAL VALUES ===');
@@ -112,6 +126,37 @@ test.describe('Student minimal edit', () => {
     const firstNameField = page.getByLabel(/rufname|given name|first name/i).first()
       .or(page.locator('input[name*="rufname"]').first());
     await firstNameField.fill(newFirstName);
+
+    // Fill Alle Vornamen
+    const allFirstNamesField = page.getByLabel(/alle vornamen|all first names|all given names/i).first()
+      .or(page.locator('input[name*="alleVornamen"]').first());
+    await allFirstNamesField.fill(newAllFirstNames);
+
+    // Fill Geschlecht (combobox field - same pattern as Staatsangehörigkeit)
+    const genderField = page.getByLabel(/geschlecht|gender|sex/i).first()
+      .or(page.locator('input[role="combobox"][aria-label*="eschlecht"]').first());
+    if (await genderField.isVisible({ timeout: 1000 })) {
+      // Click to open the combobox dropdown
+      await genderField.click();
+      await page.waitForTimeout(300);
+      
+      // Map gender value to display text
+      let genderDisplayText = '';
+      if (newGender === 'm') genderDisplayText = 'männlich|m';
+      else if (newGender === 'w') genderDisplayText = 'weiblich|w';
+      else if (newGender === 'd') genderDisplayText = 'divers|d';
+      
+      // Look for and click the gender option
+      const genderOption = page.getByRole('option', { name: new RegExp(genderDisplayText, 'i') }).first();
+      if (await genderOption.isVisible({ timeout: 1000 })) {
+        await genderOption.click();
+        console.log(`Geschlecht set to "${newGender}" (combobox)`);
+      } else {
+        console.log(`Gender option for "${newGender}" not found in combobox dropdown`);
+      }
+    } else {
+      console.log('Geschlecht field not visible - skipped');
+    }
 
     // Fill Geburtsdatum (using dd.mm.yyyy as requested)
     const birthDateField = page.getByLabel(/geburtsdatum|birth.?date|geburt/i).first()
@@ -158,6 +203,8 @@ test.describe('Student minimal edit', () => {
     const snapshotChecks = [
       { label: 'Nachname', locator: lastNameField },
       { label: 'Rufname', locator: firstNameField },
+      { label: 'Alle Vornamen', locator: allFirstNamesField },
+      { label: 'Geschlecht', locator: genderField },
       { label: 'Geburtsdatum', locator: birthDateField },
       { label: '1. Staatsangehörigkeit', locator: nationalityField },
     ];

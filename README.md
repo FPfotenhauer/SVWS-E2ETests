@@ -11,7 +11,7 @@ Dieses Repository enthält eine umfassende E2E-Test-Suite für den SVWS (Schulve
 - ✅ **Anmeldung**: Admin-Benutzer kann sich erfolgreich anmelden (Datenbank-Schema "svwse2e")
 - ✅ **Navigation**: Zu Schüler-Listen navigieren
 - ✅ **Schüler-Auswahl**: Schüler aus Liste auswählen
-- ✅ **Schüler bearbeiten**: Bearbeitung mit automatischem Speichern (Nachname, Rufname, Alle Vornamen, Geschlecht, Geburtsdatum, 1. Staatsangehörigkeit)
+- ✅ **Schüler bearbeiten**: Bearbeitung mit automatischem Speichern (Nachname, Rufname, Alle Vornamen, Geburtsort, Geburtsname, Geschlecht, Geburtsdatum, 1. Staatsangehörigkeit)
 - ✅ **Änderungen speichern**: Auto-Save funktioniert nahtlos, Änderungen persistieren sofort
 - ✅ **Automatisches Cleanup**: Testdaten werden nach Tests automatisch zurückgesetzt (optional behalten mit KEEP_TEST_DATA=true)
 - ✅ **Cross-Browser Testing**: Tests laufen auf Chromium und Firefox
@@ -100,6 +100,8 @@ KEEP_TEST_DATA=true npm test
 #    - Nachname auf "Testname-<timestamp>" geändert wurde
 #    - Rufname auf "Testfname-<timestamp>" geändert wurde
 #    - Alle Vornamen auf "TestAllNames-<timestamp>" geändert wurde
+#    - Geburtsort auf "TestBirthPlace-<timestamp>" geändert wurde
+#    - Geburtsname auf "TestBirthName-<timestamp>" geändert wurde
 #    - Geschlecht auf "divers" geändert wurde
 #    - Geburtsdatum auf "2000-12-31" geändert wurde  
 #    - 1. Staatsangehörigkeit auf "jamaikanisch" geändert wurde
@@ -130,7 +132,7 @@ SVWS-E2ETests/
 ├── tests/
 │   ├── fixtures.ts                 # Login und Navigations-Helper
 │   ├── test-data.ts               # Reset und Seeding-Utilities
-│   └── student-editvalues.spec.ts # Schüler-Bearbeitungs-Tests (6 Felder)
+│   └── student-editvalues.spec.ts # Schüler-Bearbeitungs-Tests (8 Felder)
 ├── playwright.config.ts           # Playwright-Konfiguration (Chromium + Firefox)
 ├── tsconfig.json                 # TypeScript-Konfiguration
 ├── package.json                  # Abhängigkeiten und Skripte
@@ -143,7 +145,7 @@ SVWS-E2ETests/
 
 Die Test-Suite folgt einem **minimalen, fokussierten Ansatz**:
 
-- **Ein Test pro Feature**: `student-editvalues.spec.ts` testet gezielt 6 kritische Felder
+- **Ein Test pro Feature**: `student-editvalues.spec.ts` testet gezielt 8 kritische Felder
 - **Automatischer Speicher**: SVWS speichert Änderungen automatisch (kein manueller Save-Button)
 - **Intelligentes Reset**: Original-Werte werden vor dem Test erfasst und nach dem Test wiederhergestellt
 - **Cross-Browser**: Tests laufen auf Chromium und Firefox für maximale Abdeckung
@@ -155,6 +157,8 @@ Die Test-Suite folgt einem **minimalen, fokussierten Ansatz**:
 ✅ Nachname (Textinput)
 ✅ Rufname (Textinput)
 ✅ Alle Vornamen (Textinput)
+✅ Geburtsort (Textinput)
+✅ Geburtsname (Textinput)
 ✅ Geschlecht (Combobox: männlich, weiblich, divers)
 ✅ Geburtsdatum (HTML Date Input)
 ✅ 1. Staatsangehörigkeit (Combobox mit 200+ Optionen)
@@ -184,6 +188,8 @@ const originalValues = {
   nachname: 'Große-Vorspoel',
   rufname: 'Anna',
   alleVornamen: 'Anna Maria',
+  geburtsort: 'Bonn',
+  geburtsname: '',
   geschlecht: 'weiblich',
   geburtsdatum: '2015-11-15',
   staatsangehörigkeit: 'deutsch'
@@ -193,6 +199,8 @@ const originalValues = {
 await page.fill('[data-testid="nachname"]', 'Testname-' + timestamp);
 await page.fill('[data-testid="rufname"]', 'Testfname-' + timestamp);
 await page.fill('[data-testid="alleVornamen"]', 'TestAllNames-' + timestamp);
+await page.fill('[data-testid="geburtsort"]', 'TestBirthPlace-' + timestamp);
+await page.fill('[data-testid="geburtsname"]', 'TestBirthName-' + timestamp);
 await selectComboboxOption(page, 'geschlecht', 'divers');
 await page.fill('[data-testid="geburtsdatum"]', '2000-12-31');
 await selectComboboxOption(page, 'staatsangehörigkeit', 'jamaikanisch');
@@ -264,6 +272,12 @@ npm run test:debug
 # Interaktiver UI-Modus
 npm run test:ui
 ```
+
+### Debug-Bilder
+
+- Snapshots/Screenshots werden bei Bedarf in `debug-images` gespeichert
+- Der Ordner `debug-images` ist via .gitignore vom Commit ausgeschlossen
+- Beispiel: debug-minimal-before-save.png
 
 ## 📈 Erweiterung der Test-Suite
 

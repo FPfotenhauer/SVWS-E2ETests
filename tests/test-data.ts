@@ -133,6 +133,38 @@ export async function resetTestData(page: any, originalValues: any = {}) {
           }
         }
 
+        // Restore Geburtsort
+        if (originalValues.hasOwnProperty('geburtsort')) {
+          const geburtsortField = page.getByLabel(/geburtsort|birth.?place/i).first();
+          try {
+            if (await geburtsortField.isVisible({ timeout: 500 })) {
+              await geburtsortField.clear();
+              await geburtsortField.fill(originalValues.geburtsort || '');
+              console.log(`✓ Restored Geburtsort to "${originalValues.geburtsort}"`);
+            } else {
+              console.log('Geburtsort field not visible for restore');
+            }
+          } catch (err) {
+            console.log(`Error restoring Geburtsort: ${err}`);
+          }
+        }
+
+        // Restore Geburtsname
+        if (originalValues.hasOwnProperty('geburtsname')) {
+          const geburtsnameField = page.getByLabel(/geburtsname|birth.?name/i).first();
+          try {
+            if (await geburtsnameField.isVisible({ timeout: 500 })) {
+              await geburtsnameField.clear();
+              await geburtsnameField.fill(originalValues.geburtsname || '');
+              console.log(`✓ Restored Geburtsname to "${originalValues.geburtsname}"`);
+            } else {
+              console.log('Geburtsname field not visible for restore');
+            }
+          } catch (err) {
+            console.log(`Error restoring Geburtsname: ${err}`);
+          }
+        }
+
         // Restore Geschlecht (combobox field - same pattern as Staatsangehörigkeit)
         if (originalValues.hasOwnProperty('geschlecht')) {
           const genderField = page.getByLabel(/geschlecht|gender|sex/i).first()

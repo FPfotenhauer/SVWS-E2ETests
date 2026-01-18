@@ -22,6 +22,10 @@ let originalValues: {
   mobilOderFax?: string;
   privateEmail?: string;
   schulEmail?: string;
+  konfession?: string;
+  konfessionAufsZeugnis?: boolean;
+  abmeldungReligion?: string;
+  wiederanmeldung?: string;
 } = {};
 
 const makeTimestamp = () => {
@@ -33,6 +37,15 @@ const makeTimestamp = () => {
     String(now.getHours()).padStart(2, '0'),
     String(now.getMinutes()).padStart(2, '0'),
     String(now.getSeconds()).padStart(2, '0'),
+  ].join('-');
+};
+
+const getTodayDate = () => {
+  const today = new Date();
+  return [
+    today.getFullYear(),
+    String(today.getMonth() + 1).padStart(2, '0'),
+    String(today.getDate()).padStart(2, '0'),
   ].join('-');
 };
 
@@ -70,6 +83,11 @@ test.describe('Student minimal edit', () => {
     const newMobileOrFax = '555555';
     const newPrivateEmail = `test.privat.${timestamp}@example.com`;
     const newSchoolEmail = `test.schule.${timestamp}@example.com`;
+    const newKonfession = 'Testkonfession';
+    // Always toggle the checkbox (check if unchecked, uncheck if checked)
+    const todayDate = getTodayDate();
+    const newAbmeldungReligion = todayDate; // Withdrawal date (today)
+    const newWiederanmeldung = todayDate; // Re-registration date (today)
 
     // Login
     await page.goto('/');
@@ -138,6 +156,14 @@ test.describe('Student minimal edit', () => {
       .or(page.locator('input[name*="emailPrivat"]').first());
     const origSchoolEmailField = page.getByLabel(/schulische.*e-?mail|schule.*e-?mail|school.*email/i).first()
       .or(page.locator('input[name*="emailSchule"]').first());
+    const origKonfessionField = page.getByLabel(/konfession|religion|faith/i).first()
+      .or(page.locator('input[role="combobox"][aria-label*="onfession"]').first());
+    const origKonfessionAufsZeugnisField = page.getByLabel(/konfession.*zeugnis|zeugnis.*konfession/i).first()
+      .or(page.locator('input[type="checkbox"][aria-label*="onfession"]').first());
+    const origAbmeldungReligionField = page.getByLabel(/abmeldung.*religion|religion.*abmeldung/i).first()
+      .or(page.locator('input[type="date"][aria-label*="bmel"]').first());
+    const origWiederanmeldungField = page.getByLabel(/wiederanmeldung|re-?registration/i).first()
+      .or(page.locator('input[type="date"][aria-label*="ieder"]').first());
 
     if (await origLastNameField.isVisible({ timeout: 500 })) {
       originalValues.nachname = await origLastNameField.inputValue();
@@ -187,6 +213,18 @@ test.describe('Student minimal edit', () => {
     if (await origSchoolEmailField.isVisible({ timeout: 500 })) {
       originalValues.schulEmail = await origSchoolEmailField.inputValue();
     }
+    if (await origKonfessionField.isVisible({ timeout: 500 })) {
+      originalValues.konfession = await origKonfessionField.inputValue();
+    }
+    if (await origKonfessionAufsZeugnisField.isVisible({ timeout: 500 })) {
+      originalValues.konfessionAufsZeugnis = await origKonfessionAufsZeugnisField.isChecked();
+    }
+    if (await origAbmeldungReligionField.isVisible({ timeout: 500 })) {
+      originalValues.abmeldungReligion = await origAbmeldungReligionField.inputValue();
+    }
+    if (await origWiederanmeldungField.isVisible({ timeout: 500 })) {
+      originalValues.wiederanmeldung = await origWiederanmeldungField.inputValue();
+    }
     console.log('=== CAPTURED ORIGINAL VALUES ===');
     console.log(`Nachname: "${originalValues.nachname}"`);
     console.log(`Rufname: "${originalValues.rufname}"`);
@@ -203,8 +241,7 @@ test.describe('Student minimal edit', () => {
     console.log(`Telefon: "${originalValues.telefon}"`);
     console.log(`Mobil oder Fax: "${originalValues.mobilOderFax}"`);
     console.log(`Private E-Mail-Adresse: "${originalValues.privateEmail}"`);
-    console.log(`Schulische E-Mail-Adresse: "${originalValues.schulEmail}"`);
-    console.log('=== END ORIGINAL VALUES ===');
+    console.log(`Schulische E-Mail-Adresse: "${originalValues.schulEmail}"`);    console.log(`Konfession: "${originalValues.konfession}"`);    console.log('=== END ORIGINAL VALUES ===');
 
     // Fill Nachname
     const lastNameField = page.getByLabel(/nachname|lastname/i).first()
@@ -305,6 +342,56 @@ test.describe('Student minimal edit', () => {
       .or(page.locator('input[name*="emailSchule"]').first());
     if (await schoolEmailField.isVisible({ timeout: 500 })) {
       await schoolEmailField.fill(newSchoolEmail);
+    }
+
+    // Fill Konfession (combobox field)
+    const konfessionField = page.getByLabel(/konfession|religion|faith/i).first()
+      .or(page.locator('input[role="combobox"][aria-label*="onfession"]').first());
+    if (await konfessionField.isVisible({ timeout: 1000 })) {
+      await konfessionField.click();
+      await page.waitForTimeout(300);
+      const konfessionOption = page.getByRole('option', { name: new RegExp(newKonfession, 'i') }).first();
+      if (await konfessionOption.isVisible({ timeout: 1000 })) {
+        await konfessionOption.click();
+        console.log(`Konfession set to "${newKonfession}" (combobox)`);
+      } else {
+        console.log(`Konfession option "${newKonfession}" not found in combobox dropdown`);
+      }
+    } else {
+      console.log('Konfession field not visible - skipped');
+    }
+
+    // Fill Konfession aufs Zeugnis (checkbox field)
+    const konfessionAufsZeugnisField = page.getByLabel(/konfession.*zeugnis|zeugnis.*konfession/i).first()
+      .or(page.locator('input[type="checkbox"][aria-label*="onfession"]').first());
+    if (await konfessionAufsZeugnisField.isVisible({ timeout: 1000 })) {
+      const isCurrentlyChecked = await konfessionAufsZeugnisField.isChecked();
+      // Always toggle the checkbox
+      await konfessionAufsZeugnisField.click();
+      const newState = !isCurrentlyChecked;
+      console.log(`Konfession aufs Zeugnis toggled from ${isCurrentlyChecked} to ${newState}`);
+    } else {
+      console.log('Konfession aufs Zeugnis field not visible - skipped');
+    }
+
+    // Fill Abmeldung vom Religionsunterricht (date field)
+    const abmeldungReligionField = page.getByLabel(/abmeldung.*religion|religion.*abmeldung/i).first()
+      .or(page.locator('input[type="date"][aria-label*="bmel"]').first());
+    if (await abmeldungReligionField.isVisible({ timeout: 500 })) {
+      await abmeldungReligionField.fill(newAbmeldungReligion);
+      console.log(`Abmeldung vom Religionsunterricht set to "${newAbmeldungReligion}" (date)`);
+    } else {
+      console.log('Abmeldung vom Religionsunterricht field not visible - skipped');
+    }
+
+    // Fill Wiederanmeldung (date field)
+    const wiederanmeldungField = page.getByLabel(/wiederanmeldung|re-?registration/i).first()
+      .or(page.locator('input[type="date"][aria-label*="ieder"]').first());
+    if (await wiederanmeldungField.isVisible({ timeout: 500 })) {
+      await wiederanmeldungField.fill(newWiederanmeldung);
+      console.log(`Wiederanmeldung set to "${newWiederanmeldung}" (date)`);
+    } else {
+      console.log('Wiederanmeldung field not visible - skipped');
     }
 
     // Fill Geschlecht (combobox field - same pattern as Staatsangehörigkeit)
@@ -431,12 +518,22 @@ test.describe('Student minimal edit', () => {
       { label: 'Geburtsdatum', locator: birthDateField },
       { label: '1. Staatsangehörigkeit', locator: nationalityField },
       { label: '2. Staatsangehörigkeit', locator: nationalityField2 },
+      { label: 'Konfession', locator: konfessionField },
+      { label: 'Konfession aufs Zeugnis', locator: konfessionAufsZeugnisField },
+      { label: 'Abmeldung vom Religionsunterricht', locator: abmeldungReligionField },
+      { label: 'Wiederanmeldung', locator: wiederanmeldungField },
     ];
     for (const check of snapshotChecks) {
       try {
         if (await check.locator.isVisible({ timeout: 500 })) {
-          const value = await check.locator.inputValue();
-          console.log(`${check.label}: "${value}"`);
+          // Handle checkbox fields differently
+          if (check.label === 'Konfession aufs Zeugnis') {
+            const isChecked = await check.locator.isChecked();
+            console.log(`${check.label}: ${isChecked}`);
+          } else {
+            const value = await check.locator.inputValue();
+            console.log(`${check.label}: "${value}"`);
+          }
         } else {
           console.log(`${check.label}: not visible`);
         }

@@ -454,6 +454,111 @@ export async function resetTestData(page: any, originalValues: any = {}) {
             console.log(`Error restoring Schulische E-Mail-Adresse: ${err}`);
           }
         }
+
+        // Restore Konfession (combobox)
+        if (originalValues.hasOwnProperty('konfession')) {
+          const konfessionField = page.getByLabel(/konfession|religion|faith/i).first()
+            .or(page.locator('input[role="combobox"][aria-label*="onfession"]').first());
+          try {
+            if (await konfessionField.isVisible({ timeout: 500 })) {
+              if (originalValues.konfession) {
+                // Original had a value: restore it by clicking and selecting
+                await konfessionField.click();
+                await page.waitForTimeout(300);
+                const options = page.getByRole('option');
+                const optCount = await options.count();
+                console.log(`Looking for Konfession option "${originalValues.konfession}" among ${optCount} options`);
+                let found = false;
+                for (let j = 0; j < optCount; j++) {
+                  const opt = options.nth(j);
+                  const optText = await opt.textContent().catch(() => '');
+                  if (optText && optText.toLowerCase().includes(String(originalValues.konfession).toLowerCase())) {
+                    await opt.click();
+                    found = true;
+                    console.log(`✓ Restored Konfession to "${originalValues.konfession}"`);
+                    break;
+                  }
+                }
+                if (!found) {
+                  console.log(`Could not find option for Konfession "${originalValues.konfession}" - will skip`);
+                }
+              } else {
+                // Original was empty: skip clearing (known UI limitation)
+                console.log('⚠ Konfession was originally empty - skipping clear (UI limitation)');
+              }
+            } else {
+              console.log('Konfession field not visible for restore');
+            }
+          } catch (err) {
+            console.log(`Error restoring Konfession: ${err}`);
+          }
+        }
+
+        // Restore Konfession aufs Zeugnis (checkbox)
+        if (originalValues.hasOwnProperty('konfessionAufsZeugnis')) {
+          const konfessionAufsZeugnisField = page.getByLabel(/konfession.*zeugnis|zeugnis.*konfession/i).first()
+            .or(page.locator('input[type="checkbox"][aria-label*="onfession"]').first());
+          try {
+            if (await konfessionAufsZeugnisField.isVisible({ timeout: 500 })) {
+              const isCurrentlyChecked = await konfessionAufsZeugnisField.isChecked();
+              const shouldBeChecked = originalValues.konfessionAufsZeugnis || false;
+              if (isCurrentlyChecked !== shouldBeChecked) {
+                await konfessionAufsZeugnisField.click();
+                console.log(`✓ Restored Konfession aufs Zeugnis to ${shouldBeChecked}`);
+              } else {
+                console.log(`Konfession aufs Zeugnis already ${shouldBeChecked} - no change needed`);
+              }
+            } else {
+              console.log('Konfession aufs Zeugnis field not visible for restore');
+            }
+          } catch (err) {
+            console.log(`Error restoring Konfession aufs Zeugnis: ${err}`);
+          }
+        }
+
+        // Restore Abmeldung vom Religionsunterricht (date field)
+        if (originalValues.hasOwnProperty('abmeldungReligion')) {
+          const abmeldungReligionField = page.getByLabel(/abmeldung.*religion|religion.*abmeldung/i).first()
+            .or(page.locator('input[type="date"][aria-label*="bmel"]').first());
+          try {
+            if (await abmeldungReligionField.isVisible({ timeout: 500 })) {
+              if (originalValues.abmeldungReligion) {
+                await abmeldungReligionField.clear();
+                await abmeldungReligionField.fill(originalValues.abmeldungReligion);
+                console.log(`✓ Restored Abmeldung vom Religionsunterricht to "${originalValues.abmeldungReligion}"`);
+              } else {
+                await abmeldungReligionField.clear();
+                console.log(`✓ Cleared Abmeldung vom Religionsunterricht (was originally empty)`);
+              }
+            } else {
+              console.log('Abmeldung vom Religionsunterricht field not visible for restore');
+            }
+          } catch (err) {
+            console.log(`Error restoring Abmeldung vom Religionsunterricht: ${err}`);
+          }
+        }
+
+        // Restore Wiederanmeldung (date field)
+        if (originalValues.hasOwnProperty('wiederanmeldung')) {
+          const wiederanmeldungField = page.getByLabel(/wiederanmeldung|re-?registration/i).first()
+            .or(page.locator('input[type="date"][aria-label*="ieder"]').first());
+          try {
+            if (await wiederanmeldungField.isVisible({ timeout: 500 })) {
+              if (originalValues.wiederanmeldung) {
+                await wiederanmeldungField.clear();
+                await wiederanmeldungField.fill(originalValues.wiederanmeldung);
+                console.log(`✓ Restored Wiederanmeldung to "${originalValues.wiederanmeldung}"`);
+              } else {
+                await wiederanmeldungField.clear();
+                console.log(`✓ Cleared Wiederanmeldung (was originally empty)`);
+              }
+            } else {
+              console.log('Wiederanmeldung field not visible for restore');
+            }
+          } catch (err) {
+            console.log(`Error restoring Wiederanmeldung: ${err}`);
+          }
+        }
         
         // Auto-save should trigger, wait a bit
         await page.waitForTimeout(1000);

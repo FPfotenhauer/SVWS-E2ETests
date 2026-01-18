@@ -5,3 +5,4 @@ node_modules/
 /database/
 *.log
 .DS_Store
+ai-information.md

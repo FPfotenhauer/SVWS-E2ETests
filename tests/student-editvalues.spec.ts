@@ -56,7 +56,9 @@ test.describe('Student minimal edit', () => {
     const newAllFirstNames = `TestAllNames-${timestamp}`;
     const newBirthPlace = `TestBirthPlace-${timestamp}`;
     const newBirthName = `TestBirthName-${timestamp}`;
-    const newGender: 'm' | 'w' | 'd' = 'd'; // männlich, weiblich, or divers
+    // Randomly select a gender option to test different values
+    const genderOptions = ['m', 'w', 'd'] as const;
+    const newGender = genderOptions[Math.floor(Math.random() * genderOptions.length)];
     // Use ISO format for date inputs to avoid malformed value errors
     const newBirthDate = '2000-12-31';
     const newNationality = 'jamaikanisch';

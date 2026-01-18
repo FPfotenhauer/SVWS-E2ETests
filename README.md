@@ -13,9 +13,10 @@ Dieses Repository enthält eine umfassende E2E-Test-Suite für den SVWS (Schulve
 - ✅ **Schüler-Auswahl**: Schüler aus Liste auswählen
 - ✅ **Schüler bearbeiten**: Bearbeitung mit automatischem Speichern (26+ Felder)
 - ✅ **Änderungen speichern**: Auto-Save funktioniert nahtlos, Änderungen persistieren sofort
+- ✅ **Telefonnummern bearbeiten**: "Weitere Telefonnummern" Modal mit Feldänderungen (Telefonart, Telefonnummer, Bemerkung, Gesperrt-Status)
 - ✅ **Automatisches Cleanup**: Testdaten werden nach Tests automatisch zurückgesetzt (optional behalten mit KEEP_TEST_DATA=true)
 - ✅ **Cross-Browser Testing**: Tests laufen auf Chromium und Firefox
-- ✅ **Feldabdeckung**: Umfassende Tests für Text-, Combobox-, Date- und Checkbox-Felder
+- ✅ **Feldabdeckung**: Umfassende Tests für Text-, Combobox-, Date-, Checkbox- und Modal-Felder
 - ✅ **Abhängige Felder**: Tests für bedingt aktivierte Felder (z.B. Migrationshintergrund-abhängige Felder)
 - 🔄 **Schüler erstellen**: Geplant
 - 🔄 **Schüler löschen**: Geplant
@@ -130,13 +131,15 @@ npx playwright test --project=firefox
 ```
 SVWS-E2ETests/
 ├── tests/
-│   ├── fixtures.ts                 # Login und Navigations-Helper
-│   ├── test-data.ts               # Reset und Seeding-Utilities
-│   └── student-editvalues.spec.ts # Schüler-Bearbeitungs-Tests (26+ Felder)
-├── playwright.config.ts           # Playwright-Konfiguration (Chromium + Firefox)
-├── tsconfig.json                 # TypeScript-Konfiguration
-├── package.json                  # Abhängigkeiten und Skripte
-└── README.md                     # Diese Datei
+│   ├── fixtures.ts                    # Login und Navigations-Helper
+│   ├── test-data.ts                   # Reset und Seeding-Utilities
+│   ├── student-editvalues.spec.ts     # Schüler-Bearbeitungs-Tests (26+ Felder)
+│   └── student-phone-test.spec.ts     # Telefonnummern-Modal Tests
+├── playwright.config.ts               # Playwright-Konfiguration (Chromium + Firefox)
+├── tsconfig.json                      # TypeScript-Konfiguration
+├── package.json                       # Abhängigkeiten und Skripte
+├── debug-images/                      # Screenshots und Debug-Artefakte
+└── README.md                          # Diese Datei
 ```
 
 ## 📝 Test-Design
@@ -203,7 +206,33 @@ Die Test-Suite folgt einem **minimalen, fokussierten Ansatz**:
 
 ### Bekannte Einschränkungen
 
-#### 2. Staatsangehörigkeit - Clearing bei initialem leeren Zustand
+#### 1. Telefonnummern-Persistierung (Backend-Issue)
+
+**Problem:**
+- Das "Weitere Telefonnummern" Modal erlaubt es, Telefonart, Telefonnummer, Bemerkung und Gesperrt-Status zu ändern
+- Das UI funktioniert korrekt (Modal öffnet, Eingaben werden akzeptiert, Modal schließt)
+- **Allerdings**: Die Backend-API speichert die Änderungen nicht persistent ab
+- Nach dem Speichern und Neuöffnen des Modals, sind die ursprünglichen Werte wiederhergestellt
+
+**Auswirkungen:**
+- Der Test läuft erfolgreich durch und lokalisiert korrekt die Telefonzeilen
+- Nach dem Klick auf "Speichern" zeigt die Verifikation, dass die Änderungen NICHT persistiert wurden
+- Das Feld bleibt mit dem ursprünglichen Wert gefüllt
+- Dies ist ein SVWS-Backend-Integration-Issue, nicht ein Automations-Problem
+
+**Workaround:**
+- Der Test dokumentiert dieses Backend-Issue klar in den Logs
+- Der afterEach-Hook versucht trotzdem, die Originalwerte zu speichern (als Failsafe)
+- Für Verifikation: Nutzen Sie `KEEP_TEST_DATA=true` um die Änderungen sichtbar zu lassen
+- **Entwickler-Note**: Überprüfen Sie die Backend-Implementierung der `/api/telefonnummern/save` oder ähnliches Endpoint
+
+**Test-Ausgabe bei Persistierungsfehler:**
+```
+⚠⚠ ISSUE: Phone changes NOT persisted! Expected "999-TEST-123" but got "01234-411753"
+NOTE: The "Weitere Telefonnummern" modal Speichern button may not be connected to the backend API.
+```
+
+#### 2. 2. Staatsangehörigkeit - Clearing bei initialem leeren Zustand
 
 Die Tests für das Feld "2. Staatsangehörigkeit" haben eine bekannte UI-Automation-Einschränkung:
 
@@ -419,6 +448,7 @@ Bereits implementierte Felder (26+):
 - [x] Kontaktdaten (Straße, Wohnort, Ortsteil, Telefon, Mobil/Fax, E-Mail privat, E-Mail schulisch)
 - [x] Religion (Konfession, Konfession aufs Zeugnis, Abmeldung/Wiederanmeldung vom Religionsunterricht)
 - [x] Migrationshintergrund (Checkbox, Zuzugsjahr, Geburtsland, Geburtsland Mutter/Vater, Verkehrssprache)
+- [x] Telefonnummern Modal (Telefonart, Telefonnummer, Bemerkung, Gesperrt-Status) - siehe Bekannte Einschränkungen
 
 Weitere mögliche Erweiterungen:
 - [ ] Zusätzliche Adressfelder

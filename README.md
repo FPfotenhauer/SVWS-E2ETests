@@ -11,11 +11,12 @@ Dieses Repository enthält eine umfassende E2E-Test-Suite für den SVWS (Schulve
 - ✅ **Anmeldung**: Admin-Benutzer kann sich erfolgreich anmelden (Datenbank-Schema "svwse2e")
 - ✅ **Navigation**: Zu Schüler-Listen navigieren
 - ✅ **Schüler-Auswahl**: Schüler aus Liste auswählen
-- ✅ **Schüler bearbeiten**: Bearbeitung mit automatischem Speichern (Nachname, Rufname, Alle Vornamen, Geburtsort, Geburtsname, Geschlecht, Geburtsdatum, 1. Staatsangehörigkeit)
+- ✅ **Schüler bearbeiten**: Bearbeitung mit automatischem Speichern (26+ Felder)
 - ✅ **Änderungen speichern**: Auto-Save funktioniert nahtlos, Änderungen persistieren sofort
 - ✅ **Automatisches Cleanup**: Testdaten werden nach Tests automatisch zurückgesetzt (optional behalten mit KEEP_TEST_DATA=true)
 - ✅ **Cross-Browser Testing**: Tests laufen auf Chromium und Firefox
-- 🔄 **Feldabdeckung erweitern**: Weitere Felder schrittweise hinzufügen
+- ✅ **Feldabdeckung**: Umfassende Tests für Text-, Combobox-, Date- und Checkbox-Felder
+- ✅ **Abhängige Felder**: Tests für bedingt aktivierte Felder (z.B. Migrationshintergrund-abhängige Felder)
 - 🔄 **Schüler erstellen**: Geplant
 - 🔄 **Schüler löschen**: Geplant
 
@@ -96,15 +97,14 @@ npm run test:keep-data-headed
 # 1. Führen Sie Tests mit KEEP_TEST_DATA aus
 KEEP_TEST_DATA=true npm test
 
-# 2. Überprüfen Sie manuell in der SVWS-Anwendung, dass z.B.:
-#    - Nachname auf "Testname-<timestamp>" geändert wurde
-#    - Rufname auf "Testfname-<timestamp>" geändert wurde
-#    - Alle Vornamen auf "TestAllNames-<timestamp>" geändert wurde
-#    - Geburtsort auf "TestBirthPlace-<timestamp>" geändert wurde
-#    - Geburtsname auf "TestBirthName-<timestamp>" geändert wurde
-#    - Geschlecht auf "divers" geändert wurde
-#    - Geburtsdatum auf "2000-12-31" geändert wurde  
-#    - 1. Staatsangehörigkeit auf "jamaikanisch" geändert wurde
+# 2. Überprüfen Sie manuell in der SVWS-Anwendung, dass alle Felder geändert wurden:
+#    Basis: Nachname, Rufname, Alle Vornamen, Geburtsort, Geburtsname (mit Zeitstempel)
+#    Geschlecht: zufällig (m/w/d)
+#    Geburtsdatum: 2000-12-31
+#    Staatsangehörigkeit: jamaikanisch, laotisch
+#    Kontakt: Straße, Wohnort (Wuppertal), Ortsteil (Barmen), Telefon, Fax, E-Mails
+#    Religion: Konfession (Testkonfession), Konfession aufs Zeugnis (checked), Abmeldung/Wiederanmeldung (aktuelles Datum)
+#    Migration: Migrationshintergrund (checked), Zuzugsjahr (aktuelles Jahr), Geburtsländer (Fidschi), Verkehrssprache (Fidschi)
 
 # 3. Führen Sie normale Tests aus, um die Daten zurückzusetzen
 npm test
@@ -132,7 +132,7 @@ SVWS-E2ETests/
 ├── tests/
 │   ├── fixtures.ts                 # Login und Navigations-Helper
 │   ├── test-data.ts               # Reset und Seeding-Utilities
-│   └── student-editvalues.spec.ts # Schüler-Bearbeitungs-Tests (8 Felder)
+│   └── student-editvalues.spec.ts # Schüler-Bearbeitungs-Tests (26+ Felder)
 ├── playwright.config.ts           # Playwright-Konfiguration (Chromium + Firefox)
 ├── tsconfig.json                 # TypeScript-Konfiguration
 ├── package.json                  # Abhängigkeiten und Skripte
@@ -145,24 +145,60 @@ SVWS-E2ETests/
 
 Die Test-Suite folgt einem **minimalen, fokussierten Ansatz**:
 
-- **Ein Test pro Feature**: `student-editvalues.spec.ts` testet gezielt 8 kritische Felder
+- **Ein Test pro Feature**: `student-editvalues.spec.ts` testet gezielt 26+ kritische Felder
 - **Automatischer Speicher**: SVWS speichert Änderungen automatisch (kein manueller Save-Button)
 - **Intelligentes Reset**: Original-Werte werden vor dem Test erfasst und nach dem Test wiederhergestellt
 - **Cross-Browser**: Tests laufen auf Chromium und Firefox für maximale Abdeckung
 - **Snapshot-Verifikation**: Input-Werte werden direkt nach Speicherung verifiziert
+- **Abhängige Felder**: Bedingte Feld-Aktivierung wird getestet (z.B. Migrationshintergrund)
 
 ### Getestete Felder
 
+#### Basis-Informationen
 ```
 ✅ Nachname (Textinput)
 ✅ Rufname (Textinput)
 ✅ Alle Vornamen (Textinput)
 ✅ Geburtsort (Textinput)
 ✅ Geburtsname (Textinput)
-✅ Geschlecht (Combobox: männlich, weiblich, divers)
-✅ Geburtsdatum (HTML Date Input)
-✅ 1. Staatsangehörigkeit (Combobox mit 200+ Optionen)
-✅ 2. Staatsangehörigkeit (Combobox mit 200+ Optionen) - siehe Bekannte Einschränkungen
+✅ Geschlecht (Combobox: männlich, weiblich, divers - zufällig gewählt)
+✅ Geburtsdatum (HTML Date Input: 2000-12-31)
+```
+
+#### Staatsangehörigkeit
+```
+✅ 1. Staatsangehörigkeit (Combobox mit 200+ Optionen: "jamaikanisch")
+✅ 2. Staatsangehörigkeit (Combobox mit 200+ Optionen: "laotisch") - siehe Bekannte Einschränkungen
+```
+
+#### Kontaktdaten
+```
+✅ Straße (Textinput: "Teststraße 123")
+✅ Wohnort (Combobox: "42287 Wuppertal")
+✅ Ortsteil (Combobox: "Barmen")
+✅ Telefon (Textinput: "555555")
+✅ Mobil oder Fax (Textinput: "555555")
+✅ Private E-Mail-Adresse (Email Input mit Zeitstempel)
+✅ Schulische E-Mail-Adresse (Email Input mit Zeitstempel)
+```
+
+#### Religion
+```
+✅ Konfession (Combobox: "Testkonfession")
+✅ Konfession aufs Zeugnis (Checkbox - wird getoggled)
+✅ Abmeldung vom Religionsunterricht (Date Input: aktuelles Datum)
+✅ Wiederanmeldung (Date Input: aktuelles Datum)
+```
+
+#### Migrationshintergrund (Abhängige Felder)
+```
+✅ Migrationshintergrund vorhanden (Checkbox - muss aktiviert sein)
+  └─ Wenn aktiviert, werden folgende Felder freigegeben:
+     ✅ Zuzugsjahr (Textinput yyyy: aktuelles Jahr)
+     ✅ Geburtsland (Combobox: "Fidschi")
+     ✅ Geburtsland Mutter (Combobox: "Fidschi")
+     ✅ Geburtsland Vater (Combobox: "Fidschi")
+     ✅ Verkehrssprache (Combobox: "Fidschi")
 ```
 
 ### Bekannte Einschränkungen
@@ -220,27 +256,48 @@ Da der Server selbstsignierte Zertifikate verwendet, ignoriert Playwright automa
 ```typescript
 // Test erfasst Original-Werte BEVOR sie geändert werden
 const originalValues = {
-  nachname: 'Große-Vorspoel',
-  rufname: 'Anna',
-  alleVornamen: 'Anna Maria',
-  geburtsort: 'Bonn',
+  // Basis-Informationen
+  nachname: 'Edden',
+  rufname: 'Ralph',
+  alleVornamen: '',
+  geburtsort: 'Köln',
   geburtsname: '',
-  geschlecht: 'weiblich',
-  geburtsdatum: '2015-11-15',
-  staatsangehörigkeit: 'deutsch'
+  geschlecht: 'männlich',
+  geburtsdatum: '2016-09-23',
+  
+  // Staatsangehörigkeit
+  staatsangehörigkeit: 'deutsch',
+  staatsangehörigkeit2: '',
+  
+  // Kontaktdaten
+  strasse: 'Arcostraße 319',
+  wohnort: '44867 Bochum',
+  ortsteil: '',
+  telefon: '01234-336400',
+  mobilFax: '0189-609466',
+  emailPrivat: 'R.Edden@smail.de',
+  emailSchulisch: 'R.Edden@meineschule.de',
+  
+  // Religion
+  konfession: 'röm.kath.',
+  konfessionAufsZeugnis: false,
+  abmeldungReligionsunterricht: '',
+  wiederanmeldung: '',
+  
+  // Migrationshintergrund
+  migrationshintergrundVorhanden: false,
+  zuzugsjahr: '',
+  geburtsland: 'Deutschland (DEU)',
+  geburtslandMutter: 'Deutschland (DEU)',
+  geburtslandVater: 'Deutschland (DEU)',
+  verkehrssprache: 'Deutsch (deu)'
 };
 
-// Test ändert Felder (Auto-Save)
-await page.fill('[data-testid="nachname"]', 'Testname-' + timestamp);
-await page.fill('[data-testid="rufname"]', 'Testfname-' + timestamp);
-await page.fill('[data-testid="alleVornamen"]', 'TestAllNames-' + timestamp);
-await page.fill('[data-testid="geburtsort"]', 'TestBirthPlace-' + timestamp);
-await page.fill('[data-testid="geburtsname"]', 'TestBirthName-' + timestamp);
-await selectComboboxOption(page, 'geschlecht', 'divers');
-await page.fill('[data-testid="geburtsdatum"]', '2000-12-31');
-await selectComboboxOption(page, 'staatsangehörigkeit', 'jamaikanisch');
+// Test ändert alle Felder (Auto-Save)
+// ... (siehe student-editvalues.spec.ts für Details)
 
 // Nach dem Test: Automatisches Reset zu Original-Werten
+// WICHTIG: Abhängige Felder werden VOR dem Parent-Checkbox wiederhergestellt
 afterEach(() => {
   resetTestData(page, originalValues); // Stellt alles wieder her
 });
@@ -356,13 +413,18 @@ npm run test:ui
 
 ### Geplante Feld-Erweiterungen
 
-- [x] 2. Staatsangehörigkeit (implementiert, mit bekannter Einschränkung bei leerem Ausgangswert)
-- [ ] Straße
-- [ ] Wohnort / Gemeinde
-- [ ] PLZ
-- [ ] E-Mail
-- [ ] Telefon
-- [ ] Religiöse Zugehörigkeit
+Bereits implementierte Felder (26+):
+- [x] Basis-Informationen (Nachname, Rufname, Alle Vornamen, Geburtsort, Geburtsname, Geschlecht, Geburtsdatum)
+- [x] Staatsangehörigkeit (1. und 2.)
+- [x] Kontaktdaten (Straße, Wohnort, Ortsteil, Telefon, Mobil/Fax, E-Mail privat, E-Mail schulisch)
+- [x] Religion (Konfession, Konfession aufs Zeugnis, Abmeldung/Wiederanmeldung vom Religionsunterricht)
+- [x] Migrationshintergrund (Checkbox, Zuzugsjahr, Geburtsland, Geburtsland Mutter/Vater, Verkehrssprache)
+
+Weitere mögliche Erweiterungen:
+- [ ] Zusätzliche Adressfelder
+- [ ] Schullaufbahn-Daten
+- [ ] Noten und Leistungen
+- [ ] Fehlzeiten
 
 ## 🤝 Beitrag
 

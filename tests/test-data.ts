@@ -559,6 +559,191 @@ export async function resetTestData(page: any, originalValues: any = {}) {
             console.log(`Error restoring Wiederanmeldung: ${err}`);
           }
         }
+
+        // Only restore dependent fields if they originally had values (meaning parent was checked)
+        // Note: Migrationshintergrund vorhanden will be restored AFTER these fields to avoid disabling them
+        const shouldRestoreDependentFields = originalValues.zuzugsjahr || originalValues.geburtsland || 
+                                             originalValues.geburtslandMutter || originalValues.geburtslandVater || 
+                                             originalValues.verkehrssprache;
+
+        if (shouldRestoreDependentFields) {
+          // Restore Zuzugsjahr (text field)
+          if (originalValues.hasOwnProperty('zuzugsjahr')) {
+            const zuzugsjahrField = page.getByLabel(/zuzugsjahr|year.*of.*move/i).first()
+              .or(page.locator('input[type="text"][aria-label*="uzugs"]').first());
+            try {
+              if (await zuzugsjahrField.isVisible({ timeout: 500 })) {
+                await zuzugsjahrField.clear();
+                if (originalValues.zuzugsjahr) {
+                  await zuzugsjahrField.fill(originalValues.zuzugsjahr);
+                }
+                console.log(`✓ Restored Zuzugsjahr to "${originalValues.zuzugsjahr}"`);
+              } else {
+                console.log('Zuzugsjahr field not visible for restore');
+              }
+            } catch (err) {
+              console.log(`Error restoring Zuzugsjahr: ${err}`);
+            }
+          }
+
+          // Restore Geburtsland (combobox)
+          if (originalValues.hasOwnProperty('geburtsland')) {
+            const geburtslandField = page.getByLabel(/geburtsland(?!.*mutter|.*vater)|birth.*country(?!.*mother|.*father)/i).first()
+              .or(page.locator('input[role="combobox"][aria-label*="eburtsland"]').first());
+            try {
+              if (await geburtslandField.isVisible({ timeout: 500 })) {
+                if (originalValues.geburtsland) {
+                  await geburtslandField.click();
+                  await page.waitForTimeout(300);
+                  const options = page.getByRole('option');
+                  const optCount = await options.count();
+                  let found = false;
+                  for (let j = 0; j < optCount; j++) {
+                    const opt = options.nth(j);
+                    const optText = await opt.textContent().catch(() => '');
+                    if (optText && optText.toLowerCase().includes(String(originalValues.geburtsland).toLowerCase())) {
+                      await opt.click();
+                      found = true;
+                      console.log(`✓ Restored Geburtsland to "${originalValues.geburtsland}"`);
+                      break;
+                    }
+                  }
+                  if (!found) {
+                    console.log(`Could not find Geburtsland option "${originalValues.geburtsland}"`);
+                  }
+                }
+              } else {
+                console.log('Geburtsland field not visible for restore');
+              }
+            } catch (err) {
+              console.log(`Error restoring Geburtsland: ${err}`);
+            }
+          }
+
+          // Restore Geburtsland Mutter (combobox)
+          if (originalValues.hasOwnProperty('geburtslandMutter')) {
+            const geburtslandMutterField = page.getByLabel(/geburtsland.*mutter|mutter.*geburtsland/i).first()
+              .or(page.locator('input[role="combobox"][aria-label*="utter"]').first());
+            try {
+              if (await geburtslandMutterField.isVisible({ timeout: 500 })) {
+                if (originalValues.geburtslandMutter) {
+                  await geburtslandMutterField.click();
+                  await page.waitForTimeout(300);
+                  const options = page.getByRole('option');
+                  const optCount = await options.count();
+                  let found = false;
+                  for (let j = 0; j < optCount; j++) {
+                    const opt = options.nth(j);
+                    const optText = await opt.textContent().catch(() => '');
+                    if (optText && optText.toLowerCase().includes(String(originalValues.geburtslandMutter).toLowerCase())) {
+                      await opt.click();
+                      found = true;
+                      console.log(`✓ Restored Geburtsland Mutter to "${originalValues.geburtslandMutter}"`);
+                      break;
+                    }
+                  }
+                  if (!found) {
+                    console.log(`Could not find Geburtsland Mutter option "${originalValues.geburtslandMutter}"`);
+                  }
+                }
+              } else {
+                console.log('Geburtsland Mutter field not visible for restore');
+              }
+            } catch (err) {
+              console.log(`Error restoring Geburtsland Mutter: ${err}`);
+            }
+          }
+
+          // Restore Geburtsland Vater (combobox)
+          if (originalValues.hasOwnProperty('geburtslandVater')) {
+            const geburtslandVaterField = page.getByLabel(/geburtsland.*vater|vater.*geburtsland/i).first()
+              .or(page.locator('input[role="combobox"][aria-label*="ater"]').first());
+            try {
+              if (await geburtslandVaterField.isVisible({ timeout: 500 })) {
+                if (originalValues.geburtslandVater) {
+                  await geburtslandVaterField.click();
+                  await page.waitForTimeout(300);
+                  const options = page.getByRole('option');
+                  const optCount = await options.count();
+                  let found = false;
+                  for (let j = 0; j < optCount; j++) {
+                    const opt = options.nth(j);
+                    const optText = await opt.textContent().catch(() => '');
+                    if (optText && optText.toLowerCase().includes(String(originalValues.geburtslandVater).toLowerCase())) {
+                      await opt.click();
+                      found = true;
+                      console.log(`✓ Restored Geburtsland Vater to "${originalValues.geburtslandVater}"`);
+                      break;
+                    }
+                  }
+                  if (!found) {
+                    console.log(`Could not find Geburtsland Vater option "${originalValues.geburtslandVater}"`);
+                  }
+                }
+              } else {
+                console.log('Geburtsland Vater field not visible for restore');
+              }
+            } catch (err) {
+              console.log(`Error restoring Geburtsland Vater: ${err}`);
+            }
+          }
+
+          // Restore Verkehrssprache (combobox)
+          if (originalValues.hasOwnProperty('verkehrssprache')) {
+            const verkehrsspracheField = page.getByLabel(/verkehrssprache|language.*spoken/i).first()
+              .or(page.locator('input[role="combobox"][aria-label*="erkehrssprache"]').first());
+            try {
+              if (await verkehrsspracheField.isVisible({ timeout: 500 })) {
+                if (originalValues.verkehrssprache) {
+                  await verkehrsspracheField.click();
+                  await page.waitForTimeout(300);
+                  const options = page.getByRole('option');
+                  const optCount = await options.count();
+                  let found = false;
+                  for (let j = 0; j < optCount; j++) {
+                    const opt = options.nth(j);
+                    const optText = await opt.textContent().catch(() => '');
+                    if (optText && optText.toLowerCase().includes(String(originalValues.verkehrssprache).toLowerCase())) {
+                      await opt.click();
+                      found = true;
+                      console.log(`✓ Restored Verkehrssprache to "${originalValues.verkehrssprache}"`);
+                      break;
+                    }
+                  }
+                  if (!found) {
+                    console.log(`Could not find Verkehrssprache option "${originalValues.verkehrssprache}"`);
+                  }
+                }
+              } else {
+                console.log('Verkehrssprache field not visible for restore');
+              }
+            } catch (err) {
+              console.log(`Error restoring Verkehrssprache: ${err}`);
+            }
+          }
+        }
+
+        // Now restore Migrationshintergrund vorhanden AFTER dependent fields (so they won't be disabled)
+        if (originalValues.hasOwnProperty('migrationshintergrundVorhanden')) {
+          const migrationshintergrundField = page.getByLabel(/migrationshintergrund.*vorhanden|vorhanden.*migrationshintergrund/i).first()
+            .or(page.locator('input[type="checkbox"][aria-label*="igrationshintergrund"]').first());
+          try {
+            if (await migrationshintergrundField.isVisible({ timeout: 500 })) {
+              const isCurrentlyChecked = await migrationshintergrundField.isChecked();
+              const shouldBeChecked = originalValues.migrationshintergrundVorhanden || false;
+              if (isCurrentlyChecked !== shouldBeChecked) {
+                await migrationshintergrundField.click();
+                console.log(`✓ Restored Migrationshintergrund vorhanden to ${shouldBeChecked}`);
+              } else {
+                console.log(`Migrationshintergrund vorhanden already ${shouldBeChecked} - no change needed`);
+              }
+            } else {
+              console.log('Migrationshintergrund vorhanden field not visible for restore');
+            }
+          } catch (err) {
+            console.log(`Error restoring Migrationshintergrund vorhanden: ${err}`);
+          }
+        }
         
         // Auto-save should trigger, wait a bit
         await page.waitForTimeout(1000);

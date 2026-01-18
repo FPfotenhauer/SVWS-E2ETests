@@ -26,6 +26,12 @@ let originalValues: {
   konfessionAufsZeugnis?: boolean;
   abmeldungReligion?: string;
   wiederanmeldung?: string;
+  migrationshintergrundVorhanden?: boolean;
+  zuzugsjahr?: string;
+  geburtsland?: string;
+  geburtslandMutter?: string;
+  geburtslandVater?: string;
+  verkehrssprache?: string;
 } = {};
 
 const makeTimestamp = () => {
@@ -88,6 +94,15 @@ test.describe('Student minimal edit', () => {
     const todayDate = getTodayDate();
     const newAbmeldungReligion = todayDate; // Withdrawal date (today)
     const newWiederanmeldung = todayDate; // Re-registration date (today)
+    // Ensure Migrationshintergrund checkbox is checked to enable other fields
+    const ensureMigrationshintergrundChecked = true;
+    // Migrationshintergrund-dependent fields
+    const currentYear = new Date().getFullYear().toString();
+    const newZuzugsjahr = currentYear; // Year of move
+    const newGeburtsland = 'Fidschi';
+    const newGeburtslandMutter = 'Fidschi';
+    const newGeburtslandVater = 'Fidschi';
+    const newVerkehrssprache = 'Fidschi';
 
     // Login
     await page.goto('/');
@@ -164,6 +179,18 @@ test.describe('Student minimal edit', () => {
       .or(page.locator('input[type="date"][aria-label*="bmel"]').first());
     const origWiederanmeldungField = page.getByLabel(/wiederanmeldung|re-?registration/i).first()
       .or(page.locator('input[type="date"][aria-label*="ieder"]').first());
+    const origMigrationshintergrundField = page.getByLabel(/migrationshintergrund.*vorhanden|vorhanden.*migrationshintergrund/i).first()
+      .or(page.locator('input[type="checkbox"][aria-label*="igrationshintergrund"]').first());
+    const origZuzugsjahr = page.getByLabel(/zuzugsjahr|year.*of.*move/i).first()
+      .or(page.locator('input[type="text"][aria-label*="uzugs"]').first());
+    const origGeburtslandField = page.getByLabel(/geburtsland(?!.*mutter|.*vater)|birth.*country(?!.*mother|.*father)/i).first()
+      .or(page.locator('input[role="combobox"][aria-label*="eburtsland"]').first());
+    const origGeburtslandMutterField = page.getByLabel(/geburtsland.*mutter|mutter.*geburtsland/i).first()
+      .or(page.locator('input[role="combobox"][aria-label*="utter"]').first());
+    const origGeburtslandVaterField = page.getByLabel(/geburtsland.*vater|vater.*geburtsland/i).first()
+      .or(page.locator('input[role="combobox"][aria-label*="ater"]').first());
+    const origVerkehrsspracheField = page.getByLabel(/verkehrssprache|language.*spoken/i).first()
+      .or(page.locator('input[role="combobox"][aria-label*="erkehrssprache"]').first());
 
     if (await origLastNameField.isVisible({ timeout: 500 })) {
       originalValues.nachname = await origLastNameField.inputValue();
@@ -225,6 +252,24 @@ test.describe('Student minimal edit', () => {
     if (await origWiederanmeldungField.isVisible({ timeout: 500 })) {
       originalValues.wiederanmeldung = await origWiederanmeldungField.inputValue();
     }
+    if (await origMigrationshintergrundField.isVisible({ timeout: 500 })) {
+      originalValues.migrationshintergrundVorhanden = await origMigrationshintergrundField.isChecked();
+    }
+    if (await origZuzugsjahr.isVisible({ timeout: 500 })) {
+      originalValues.zuzugsjahr = await origZuzugsjahr.inputValue();
+    }
+    if (await origGeburtslandField.isVisible({ timeout: 500 })) {
+      originalValues.geburtsland = await origGeburtslandField.inputValue();
+    }
+    if (await origGeburtslandMutterField.isVisible({ timeout: 500 })) {
+      originalValues.geburtslandMutter = await origGeburtslandMutterField.inputValue();
+    }
+    if (await origGeburtslandVaterField.isVisible({ timeout: 500 })) {
+      originalValues.geburtslandVater = await origGeburtslandVaterField.inputValue();
+    }
+    if (await origVerkehrsspracheField.isVisible({ timeout: 500 })) {
+      originalValues.verkehrssprache = await origVerkehrsspracheField.inputValue();
+    }
     console.log('=== CAPTURED ORIGINAL VALUES ===');
     console.log(`Nachname: "${originalValues.nachname}"`);
     console.log(`Rufname: "${originalValues.rufname}"`);
@@ -241,7 +286,18 @@ test.describe('Student minimal edit', () => {
     console.log(`Telefon: "${originalValues.telefon}"`);
     console.log(`Mobil oder Fax: "${originalValues.mobilOderFax}"`);
     console.log(`Private E-Mail-Adresse: "${originalValues.privateEmail}"`);
-    console.log(`Schulische E-Mail-Adresse: "${originalValues.schulEmail}"`);    console.log(`Konfession: "${originalValues.konfession}"`);    console.log('=== END ORIGINAL VALUES ===');
+    console.log(`Schulische E-Mail-Adresse: "${originalValues.schulEmail}"`);
+    console.log(`Konfession: "${originalValues.konfession}"`);
+    console.log(`Konfession aufs Zeugnis: ${originalValues.konfessionAufsZeugnis}`);
+    console.log(`Abmeldung vom Religionsunterricht: "${originalValues.abmeldungReligion}"`);
+    console.log(`Wiederanmeldung: "${originalValues.wiederanmeldung}"`);
+    console.log(`Migrationshintergrund vorhanden: ${originalValues.migrationshintergrundVorhanden}`);
+    console.log(`Zuzugsjahr: "${originalValues.zuzugsjahr}"`);
+    console.log(`Geburtsland: "${originalValues.geburtsland}"`);
+    console.log(`Geburtsland Mutter: "${originalValues.geburtslandMutter}"`);
+    console.log(`Geburtsland Vater: "${originalValues.geburtslandVater}"`);
+    console.log(`Verkehrssprache: "${originalValues.verkehrssprache}"`);
+    console.log('=== END ORIGINAL VALUES ===');
 
     // Fill Nachname
     const lastNameField = page.getByLabel(/nachname|lastname/i).first()
@@ -394,6 +450,100 @@ test.describe('Student minimal edit', () => {
       console.log('Wiederanmeldung field not visible - skipped');
     }
 
+    // Ensure Migrationshintergrund vorhanden checkbox is checked (to enable other fields)
+    const migrationshintergrundField = page.getByLabel(/migrationshintergrund.*vorhanden|vorhanden.*migrationshintergrund/i).first()
+      .or(page.locator('input[type="checkbox"][aria-label*="igrationshintergrund"]').first());
+    if (await migrationshintergrundField.isVisible({ timeout: 1000 })) {
+      const isCurrentlyChecked = await migrationshintergrundField.isChecked();
+      if (!isCurrentlyChecked && ensureMigrationshintergrundChecked) {
+        // If unchecked and we need it checked, check it
+        await migrationshintergrundField.click();
+        console.log(`Migrationshintergrund vorhanden: enabled (was unchecked, now checked)`);
+      } else if (isCurrentlyChecked) {
+        console.log(`Migrationshintergrund vorhanden: already checked`);
+      }
+    } else {
+      console.log('Migrationshintergrund vorhanden field not visible - skipped');
+    }
+
+    // Fill Zuzugsjahr (text input - current year)
+    const zuzugsjahr = page.getByLabel(/zuzugsjahr|year.*of.*move/i).first()
+      .or(page.locator('input[type="text"][aria-label*="uzugs"]').first());
+    if (await zuzugsjahr.isVisible({ timeout: 500 })) {
+      await zuzugsjahr.fill(newZuzugsjahr);
+      console.log(`Zuzugsjahr set to "${newZuzugsjahr}" (text)`);
+    } else {
+      console.log('Zuzugsjahr field not visible - skipped');
+    }
+
+    // Fill Geburtsland (combobox)
+    const geburtslandField = page.getByLabel(/geburtsland(?!.*mutter|.*vater)|birth.*country(?!.*mother|.*father)/i).first()
+      .or(page.locator('input[role="combobox"][aria-label*="eburtsland"]').first());
+    if (await geburtslandField.isVisible({ timeout: 1000 })) {
+      await geburtslandField.click();
+      await page.waitForTimeout(300);
+      const geburtslandOption = page.getByRole('option', { name: new RegExp(newGeburtsland, 'i') }).first();
+      if (await geburtslandOption.isVisible({ timeout: 1000 })) {
+        await geburtslandOption.click();
+        console.log(`Geburtsland set to "${newGeburtsland}" (combobox)`);
+      } else {
+        console.log(`Geburtsland option "${newGeburtsland}" not found`);
+      }
+    } else {
+      console.log('Geburtsland field not visible - skipped');
+    }
+
+    // Fill Geburtsland Mutter (combobox)
+    const geburtslandMutterField = page.getByLabel(/geburtsland.*mutter|mutter.*geburtsland/i).first()
+      .or(page.locator('input[role="combobox"][aria-label*="utter"]').first());
+    if (await geburtslandMutterField.isVisible({ timeout: 1000 })) {
+      await geburtslandMutterField.click();
+      await page.waitForTimeout(300);
+      const geburtslandMutterOption = page.getByRole('option', { name: new RegExp(newGeburtslandMutter, 'i') }).first();
+      if (await geburtslandMutterOption.isVisible({ timeout: 1000 })) {
+        await geburtslandMutterOption.click();
+        console.log(`Geburtsland Mutter set to "${newGeburtslandMutter}" (combobox)`);
+      } else {
+        console.log(`Geburtsland Mutter option "${newGeburtslandMutter}" not found`);
+      }
+    } else {
+      console.log('Geburtsland Mutter field not visible - skipped');
+    }
+
+    // Fill Geburtsland Vater (combobox)
+    const geburtslandVaterField = page.getByLabel(/geburtsland.*vater|vater.*geburtsland/i).first()
+      .or(page.locator('input[role="combobox"][aria-label*="ater"]').first());
+    if (await geburtslandVaterField.isVisible({ timeout: 1000 })) {
+      await geburtslandVaterField.click();
+      await page.waitForTimeout(300);
+      const geburtslandVaterOption = page.getByRole('option', { name: new RegExp(newGeburtslandVater, 'i') }).first();
+      if (await geburtslandVaterOption.isVisible({ timeout: 1000 })) {
+        await geburtslandVaterOption.click();
+        console.log(`Geburtsland Vater set to "${newGeburtslandVater}" (combobox)`);
+      } else {
+        console.log(`Geburtsland Vater option "${newGeburtslandVater}" not found`);
+      }
+    } else {
+      console.log('Geburtsland Vater field not visible - skipped');
+    }
+
+    // Fill Verkehrssprache (combobox)
+    const verkehrsspracheField = page.getByLabel(/verkehrssprache|language.*spoken/i).first()
+      .or(page.locator('input[role="combobox"][aria-label*="erkehrssprache"]').first());
+    if (await verkehrsspracheField.isVisible({ timeout: 1000 })) {
+      await verkehrsspracheField.click();
+      await page.waitForTimeout(300);
+      const verkehrsspracheOption = page.getByRole('option', { name: new RegExp(newVerkehrssprache, 'i') }).first();
+      if (await verkehrsspracheOption.isVisible({ timeout: 1000 })) {
+        await verkehrsspracheOption.click();
+        console.log(`Verkehrssprache set to "${newVerkehrssprache}" (combobox)`);
+      } else {
+        console.log(`Verkehrssprache option "${newVerkehrssprache}" not found`);
+      }
+    } else {
+      console.log('Verkehrssprache field not visible - skipped');
+    }
+
     // Fill Geschlecht (combobox field - same pattern as Staatsangehörigkeit)
     const genderField = page.getByLabel(/geschlecht|gender|sex/i).first()
       .or(page.locator('input[role="combobox"][aria-label*="eschlecht"]').first());
@@ -522,6 +672,12 @@ test.describe('Student minimal edit', () => {
       { label: 'Konfession aufs Zeugnis', locator: konfessionAufsZeugnisField },
       { label: 'Abmeldung vom Religionsunterricht', locator: abmeldungReligionField },
       { label: 'Wiederanmeldung', locator: wiederanmeldungField },
+      { label: 'Migrationshintergrund vorhanden', locator: migrationshintergrundField },
+      { label: 'Zuzugsjahr', locator: zuzugsjahr },
+      { label: 'Geburtsland', locator: geburtslandField },
+      { label: 'Geburtsland Mutter', locator: geburtslandMutterField },
+      { label: 'Geburtsland Vater', locator: geburtslandVaterField },
+      { label: 'Verkehrssprache', locator: verkehrsspracheField },
     ];
     for (const check of snapshotChecks) {
       try {

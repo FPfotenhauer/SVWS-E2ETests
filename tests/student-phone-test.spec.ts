@@ -93,7 +93,7 @@ test.describe('Student Phone Numbers', () => {
         const gesperrtCheckbox = modal.locator('input[type="checkbox"]').first();
 
         // Ensure fields are editable
-        const ensureEditable = async (locator) => {
+        const ensureEditable = async (locator: any) => {
           if (!locator) return false;
           if (await locator.isEditable().catch(() => false)) return true;
           await locator.click({ force: true }).catch(() => {});
@@ -157,7 +157,7 @@ test.describe('Student Phone Numbers', () => {
         await page.waitForTimeout(400);
         console.log('Phone data reset completed');
       } catch (e) {
-        console.log(`Note: Could not fully restore phone data: ${e.message}`);
+        console.log(`Note: Could not fully restore phone data: ${(e as Error).message}`);
       }
     }
   });
@@ -454,7 +454,7 @@ test.describe('Student Phone Numbers', () => {
             }
           }
         } catch (e) {
-          console.log(`Verification error: ${e.message}`);
+          console.log(`Verification error: ${(e as Error).message}`);
         }
       } else {
         console.log('⚠ Modal still open after Speichern');

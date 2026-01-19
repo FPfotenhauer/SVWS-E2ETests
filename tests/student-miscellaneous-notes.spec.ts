@@ -104,7 +104,7 @@ test.describe('Student miscellaneous notes', () => {
           }
         }
       } catch (e) {
-        console.log(`⚠ Error deleting notes: ${e.message}`);
+        console.log(`⚠ Error deleting notes: ${e instanceof Error ? e.message : String(e)}`);
       }
     }
 
@@ -142,7 +142,7 @@ test.describe('Student miscellaneous notes', () => {
           }
         }
       } catch (e) {
-        console.log(`⚠ Error unchecking consent checkboxes: ${e.message}`);
+        console.log(`⚠ Error unchecking consent checkboxes: ${e instanceof Error ? e.message : String(e)}`);
       }
     }
 
@@ -202,7 +202,7 @@ test.describe('Student miscellaneous notes', () => {
           console.log(`✓ Unchecked ${uncheckedCount} learning platform checkboxes`);
         }
       } catch (e) {
-        console.log(`⚠ Error unchecking platform checkboxes: ${e.message}`);
+        console.log(`⚠ Error unchecking platform checkboxes: ${e instanceof Error ? e.message : String(e)}`);
       }
     }
 

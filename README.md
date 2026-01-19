@@ -14,6 +14,7 @@ Dieses Repository enthält eine umfassende E2E-Test-Suite für den SVWS (Schulve
 - ✅ **Schüler bearbeiten**: Bearbeitung mit automatischem Speichern (26+ Felder)
 - ✅ **Änderungen speichern**: Auto-Save funktioniert nahtlos, Änderungen persistieren sofort
 - ✅ **Telefonnummern bearbeiten**: "Weitere Telefonnummern" Modal mit Feldänderungen (Telefonart, Telefonnummer, Bemerkung, Gesperrt-Status)
+- ✅ **Sonstiges-Tab (Vermerke, Einwilligungen, Lernplattformen)**: Erstellen von Vermerken, Auswahl von Vermerk-Typen, Verwaltung von Foto-Einwilligungen, Aktivierung von Lernplattform-Zustimmungen
 - ✅ **Automatisches Cleanup**: Testdaten werden nach Tests automatisch zurückgesetzt (optional behalten mit KEEP_TEST_DATA=true)
 - ✅ **Cross-Browser Testing**: Tests laufen auf Chromium und Firefox
 - ✅ **Feldabdeckung**: Umfassende Tests für Text-, Combobox-, Date-, Checkbox- und Modal-Felder
@@ -116,8 +117,14 @@ npm test
 ### Spezifische Test-Dateien ausführen
 
 ```bash
-# Nur Schüler-Tests
+# Nur Schüler-Bearbeitungs-Tests (26+ Felder)
 npx playwright test tests/student-editvalues.spec.ts
+
+# Nur Telefonnummern-Modal-Tests
+npx playwright test tests/student-phone-test.spec.ts
+
+# Nur Sonstiges-Tab-Tests (Vermerke, Einwilligungen, Lernplattformen)
+npx playwright test tests/student-miscellaneous-notes.spec.ts
 
 # Nur in Chromium
 npx playwright test --project=chromium
@@ -134,7 +141,8 @@ SVWS-E2ETests/
 │   ├── fixtures.ts                    # Login und Navigations-Helper
 │   ├── test-data.ts                   # Reset und Seeding-Utilities
 │   ├── student-editvalues.spec.ts     # Schüler-Bearbeitungs-Tests (26+ Felder)
-│   └── student-phone-test.spec.ts     # Telefonnummern-Modal Tests
+│   ├── student-phone-test.spec.ts     # Telefonnummern-Modal Tests
+│   └── student-miscellaneous-notes.spec.ts  # Sonstiges-Tab Tests (Vermerke, Einwilligungen, Lernplattformen)
 ├── playwright.config.ts               # Playwright-Konfiguration (Chromium + Firefox)
 ├── tsconfig.json                      # TypeScript-Konfiguration
 ├── package.json                       # Abhängigkeiten und Skripte
@@ -148,7 +156,10 @@ SVWS-E2ETests/
 
 Die Test-Suite folgt einem **minimalen, fokussierten Ansatz**:
 
-- **Ein Test pro Feature**: `student-editvalues.spec.ts` testet gezielt 26+ kritische Felder
+- **Ein Test pro Feature**: Tests sind gezielt auf spezifische Features ausgerichtet
+  - `student-editvalues.spec.ts`: 26+ kritische Felder im Hauptformular
+  - `student-phone-test.spec.ts`: Telefonnummern-Modal und Feldänderungen
+  - `student-miscellaneous-notes.spec.ts`: Sonstiges-Tab (Vermerke, Einwilligungen, Lernplattformen)
 - **Automatischer Speicher**: SVWS speichert Änderungen automatisch (kein manueller Save-Button)
 - **Intelligentes Reset**: Original-Werte werden vor dem Test erfasst und nach dem Test wiederhergestellt
 - **Cross-Browser**: Tests laufen auf Chromium und Firefox für maximale Abdeckung
@@ -202,6 +213,24 @@ Die Test-Suite folgt einem **minimalen, fokussierten Ansatz**:
      ✅ Geburtsland Mutter (Combobox: "Fidschi")
      ✅ Geburtsland Vater (Combobox: "Fidschi")
      ✅ Verkehrssprache (Combobox: "Fidschi")
+```
+
+#### Sonstiges-Tab (Vermerke, Einwilligungen, Lernplattformen)
+```
+✅ Vermerke: Neuen Vermerk hinzufügen
+   ✅ Vermerk-Text (Textarea mit Zeitstempel)
+   ✅ Vermerk-Typ (Combobox: zufällige Auswahl aus Sportbefreiung, Laufbahn-Bemerkung, Corona-Bemerkung, etc.)
+   ✅ Automatische Löschung (Notes werden nach dem Test gelöscht)
+
+✅ Einwilligungen: Verwendung Foto
+   ✅ Abgefragt (Checkbox)
+   ✅ Zugestimmt (Checkbox)
+
+✅ Lernplattformen: Einwilligung Abgefragt und Nutzung
+   ✅ Logineo NRW (Abgefragt + Nutzung Checkboxes)
+   ✅ IServ (Abgefragt + Nutzung Checkboxes)
+   ✅ MNS Pro (Abgefragt + Nutzung Checkboxes)
+   ✅ Automatisches Zurücksetzen aller Checkboxes nach Test
 ```
 
 ### Bekannte Einschränkungen

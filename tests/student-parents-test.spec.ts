@@ -1349,8 +1349,12 @@ test.describe('Student parents/legal guardians', () => {
           await bemerkungenTextarea.click({ timeout: 2000 });
           await page.waitForTimeout(200);
           await bemerkungenTextarea.fill(originalValues['Bemerkungen']);
-          await bemerkungenTextarea.press('Tab'); // Press Tab on the textarea element itself
-          await page.waitForTimeout(1000); // Wait longer for auto-save to complete
+          
+          // Trigger save by explicitly blurring the element
+          // Using .blur() is more reliable than clicking other elements which might be intercepted
+          await bemerkungenTextarea.evaluate(e => e.blur());
+          
+          await page.waitForTimeout(2000); // Wait longer (2s) for auto-save to complete as this is the last action
           console.log(`✓ Restored Bemerkungen to "${originalValues['Bemerkungen']}"`);
         } catch (error) {
           console.log(`⚠ Could not restore Bemerkungen: ${error}`);

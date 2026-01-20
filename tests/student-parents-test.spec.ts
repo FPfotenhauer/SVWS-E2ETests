@@ -275,6 +275,362 @@ test.describe('Student parents/legal guardians', () => {
       }
     }
 
+    // Find and modify Name field (Nachname of the parent)
+    // Look for all span labels with "Name" text and find the right one
+    console.log('Looking for Name (Nachname) field...');
+    const allNameLabels = page.locator('span').filter({ hasText: /^Name$/ });
+    const nameLabelCount = await allNameLabels.count();
+    console.log(`Found ${nameLabelCount} labels with text "Name"`);
+    
+    let nameInput = null;
+    let nameLabel = null;
+    
+    // Try each label and look for one with an actual value (not empty)
+    for (let i = 0; i < nameLabelCount; i++) {
+      const label = allNameLabels.nth(i);
+      const labelId = await label.getAttribute('id').catch(() => '');
+      const labelText = await label.textContent().catch(() => '');
+      console.log(`  Name label ${i}: text="${labelText}", id="${labelId}"`);
+      
+      // Try to find associated input
+      let input;
+      if (labelId) {
+        input = page.locator(`input[aria-labelledby="${labelId}"]:not([readonly])`).first();
+      } else {
+        // Find input in the same parent container
+        const container = label.locator('xpath=ancestor::div[contains(@class, "flex") or contains(@class, "col")]').first();
+        input = container.locator('input[type="text"]:not([readonly])').first();
+      }
+      
+      const inputVisible = await input.isVisible({ timeout: 1000 }).catch(() => false);
+      if (inputVisible) {
+        const inputId = await input.getAttribute('id').catch(() => '');
+        const inputValue = await input.inputValue().catch(() => '');
+        const inputPlaceholder = await input.getAttribute('placeholder').catch(() => '');
+        console.log(`    Associated input: id="${inputId}", value="${inputValue}", placeholder="${inputPlaceholder}"`);
+        
+        // Select the input that has a value (the actual Name field, not a search/filter field)
+        if (inputValue && inputValue.trim().length > 0) {
+          nameLabel = label;
+          nameInput = input;
+          console.log(`    ✓ Selected this as the Name input (has value)`);
+          break;
+        }
+      }
+    }
+    
+    // If we didn't find one with a value, fall back to the first visible one
+    if (!nameInput) {
+      for (let i = 0; i < nameLabelCount; i++) {
+        const label = allNameLabels.nth(i);
+        const labelId = await label.getAttribute('id').catch(() => '');
+        
+        let input;
+        if (labelId) {
+          input = page.locator(`input[aria-labelledby="${labelId}"]:not([readonly])`).first();
+        } else {
+          const container = label.locator('xpath=ancestor::div[contains(@class, "flex") or contains(@class, "col")]').first();
+          input = container.locator('input[type="text"]:not([readonly])').first();
+        }
+        
+        const inputVisible = await input.isVisible({ timeout: 1000 }).catch(() => false);
+        if (inputVisible) {
+          nameLabel = label;
+          nameInput = input;
+          console.log(`  ✓ Fallback: Selected Name input at index ${i}`);
+          break;
+        }
+      }
+    }
+    
+    if (!nameInput) {
+      console.log('⚠ Name field not found or not visible - skipping');
+    } else {
+      // Get current value
+      const currentNameValue = await nameInput.inputValue().catch(() => '') || '';
+      console.log(`Current Name value: "${currentNameValue}"`);
+      
+      // Store original value for restoration
+      originalValues['Name'] = currentNameValue;
+      
+      // Create timestamp
+      const now = new Date();
+      const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, 19);
+      const newNameValue = `Testname-${timestamp}`;
+      
+      // Clear and fill with new value
+      await nameInput.click();
+      await page.waitForTimeout(200);
+      
+      // Try clearing with keyboard
+      await page.keyboard.press('Control+A');
+      await page.keyboard.press('Backspace');
+      
+      // Type the new value character by character
+      await page.keyboard.type(newNameValue, { delay: 50 });
+      
+      // Wait a bit to let the value settle
+      await page.waitForTimeout(300);
+      
+      // Check the value immediately after typing
+      const valueAfterTyping = await nameInput.inputValue().catch(() => '');
+      console.log(`Value immediately after typing: "${valueAfterTyping}"`);
+      
+      // Take screenshot after filling to debug
+      await page.screenshot({ path: 'debug-images/name-field-filled.png' });
+      console.log('Screenshot taken: debug-images/name-field-filled.png');
+      
+      await page.keyboard.press('Tab'); // Leave field to trigger save
+      console.log(`✓ Changed Name from "${currentNameValue}" to "${newNameValue}"`);
+      
+      // Wait for auto-save
+      await page.waitForTimeout(1000);
+      
+      // Verify the change
+      const updatedNameValue = await nameInput.inputValue().catch(() => '');
+      console.log(`Updated Name value: "${updatedNameValue}"`);
+    }
+
+    // Find and modify Vorname field (first name of the parent)
+    console.log('Looking for Vorname field...');
+    const allVornameLabels = page.locator('span').filter({ hasText: /^Vorname$/ });
+    const vornameLabelCount = await allVornameLabels.count();
+    console.log(`Found ${vornameLabelCount} labels with text "Vorname"`);
+    
+    let vornameInput = null;
+    let vornameLabel = null;
+    
+    // Try each label and look for one with an actual value (not empty)
+    for (let i = 0; i < vornameLabelCount; i++) {
+      const label = allVornameLabels.nth(i);
+      const labelId = await label.getAttribute('id').catch(() => '');
+      const labelText = await label.textContent().catch(() => '');
+      console.log(`  Vorname label ${i}: text="${labelText}", id="${labelId}"`);
+      
+      // Try to find associated input
+      let input;
+      if (labelId) {
+        input = page.locator(`input[aria-labelledby="${labelId}"]:not([readonly])`).first();
+      } else {
+        // Find input in the same parent container
+        const container = label.locator('xpath=ancestor::div[contains(@class, "flex") or contains(@class, "col")]').first();
+        input = container.locator('input[type="text"]:not([readonly])').first();
+      }
+      
+      const inputVisible = await input.isVisible({ timeout: 1000 }).catch(() => false);
+      if (inputVisible) {
+        const inputId = await input.getAttribute('id').catch(() => '');
+        const inputValue = await input.inputValue().catch(() => '');
+        const inputPlaceholder = await input.getAttribute('placeholder').catch(() => '');
+        console.log(`    Associated input: id="${inputId}", value="${inputValue}", placeholder="${inputPlaceholder}"`);
+        
+        // Select the input that has a value (the actual Vorname field, not a search/filter field)
+        if (inputValue && inputValue.trim().length > 0) {
+          vornameLabel = label;
+          vornameInput = input;
+          console.log(`    ✓ Selected this as the Vorname input (has value)`);
+          break;
+        }
+      }
+    }
+    
+    // If we didn't find one with a value, fall back to the first visible one
+    if (!vornameInput) {
+      for (let i = 0; i < vornameLabelCount; i++) {
+        const label = allVornameLabels.nth(i);
+        const labelId = await label.getAttribute('id').catch(() => '');
+        
+        let input;
+        if (labelId) {
+          input = page.locator(`input[aria-labelledby="${labelId}"]:not([readonly])`).first();
+        } else {
+          const container = label.locator('xpath=ancestor::div[contains(@class, "flex") or contains(@class, "col")]').first();
+          input = container.locator('input[type="text"]:not([readonly])').first();
+        }
+        
+        const inputVisible = await input.isVisible({ timeout: 1000 }).catch(() => false);
+        if (inputVisible) {
+          vornameLabel = label;
+          vornameInput = input;
+          console.log(`  ✓ Fallback: Selected Vorname input at index ${i}`);
+          break;
+        }
+      }
+    }
+    
+    if (!vornameInput) {
+      console.log('⚠ Vorname field not found or not visible - skipping');
+    } else {
+      // Get current value
+      const currentVornameValue = await vornameInput.inputValue().catch(() => '') || '';
+      console.log(`Current Vorname value: "${currentVornameValue}"`);
+      
+      // Store original value for restoration
+      originalValues['Vorname'] = currentVornameValue;
+      
+      // Create timestamp
+      const now = new Date();
+      const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, 19);
+      const newVornameValue = `Testvorname-${timestamp}`;
+      
+      // Clear and fill with new value
+      await vornameInput.click();
+      await page.waitForTimeout(200);
+      
+      // Try clearing with keyboard
+      await page.keyboard.press('Control+A');
+      await page.keyboard.press('Backspace');
+      
+      // Type the new value character by character
+      await page.keyboard.type(newVornameValue, { delay: 50 });
+      
+      // Wait a bit to let the value settle
+      await page.waitForTimeout(300);
+      
+      // Check the value immediately after typing
+      const valueAfterTyping = await vornameInput.inputValue().catch(() => '');
+      console.log(`Value immediately after typing: "${valueAfterTyping}"`);
+      
+      await page.keyboard.press('Tab'); // Leave field to trigger save
+      console.log(`✓ Changed Vorname from "${currentVornameValue}" to "${newVornameValue}"`);
+      
+      // Wait for auto-save
+      await page.waitForTimeout(1000);
+      
+      // Verify the change
+      const updatedVornameValue = await vornameInput.inputValue().catch(() => '');
+      console.log(`Updated Vorname value: "${updatedVornameValue}"`);
+    }
+
+    // Find and modify E-Mail-Adresse field
+    console.log('Looking for E-Mail-Adresse field...');
+    // Try different variations of the email label
+    let allEmailLabels = page.locator('span').filter({ hasText: /^E-Mail-Adresse$/ });
+    let emailLabelCount = await allEmailLabels.count();
+    console.log(`Found ${emailLabelCount} labels with text "E-Mail-Adresse"`);
+    
+    if (emailLabelCount === 0) {
+      // Try without "Adresse" suffix
+      allEmailLabels = page.locator('span').filter({ hasText: /^E-Mail$|^Email$|^E-mail$/ });
+      emailLabelCount = await allEmailLabels.count();
+      console.log(`Trying alternative: Found ${emailLabelCount} labels with text "E-Mail/Email"`);
+    }
+    
+    let emailInput = null;
+    let emailLabel = null;
+    
+    // Try each label and look for all associated inputs, log them
+    for (let i = 0; i < emailLabelCount; i++) {
+      const label = allEmailLabels.nth(i);
+      const labelId = await label.getAttribute('id').catch(() => '');
+      const labelText = await label.textContent().catch(() => '');
+      console.log(`  E-Mail label ${i}: text="${labelText}", id="${labelId}"`);
+      
+      // Try to find associated input
+      let input;
+      if (labelId) {
+        input = page.locator(`input[aria-labelledby="${labelId}"]:not([readonly])`).first();
+      } else {
+        // Find input in the same parent container
+        const container = label.locator('xpath=ancestor::div[contains(@class, "flex") or contains(@class, "col")]').first();
+        input = container.locator('input[type="text"]:not([readonly]), input[type="email"]:not([readonly])').first();
+      }
+      
+      const inputVisible = await input.isVisible({ timeout: 1000 }).catch(() => false);
+      if (inputVisible) {
+        const inputId = await input.getAttribute('id').catch(() => '');
+        const inputValue = await input.inputValue().catch(() => '');
+        const inputPlaceholder = await input.getAttribute('placeholder').catch(() => '');
+        const inputType = await input.getAttribute('type').catch(() => '');
+        console.log(`    Associated input: id="${inputId}", value="${inputValue}", placeholder="${inputPlaceholder}", type="${inputType}"`);
+        
+        // Skip uiSelectInput (filter fields) - look for regular input fields
+        // Prefer inputs with actual values or inputs that don't have uiSelectInput in their id
+        if (!inputId.includes('uiSelectInput')) {
+          emailLabel = label;
+          emailInput = input;
+          console.log(`    ✓ Selected this as the E-Mail input (not a filter field)`);
+          break;
+        }
+      }
+    }
+    
+    // If we only found filter fields, try to find the actual email input by looking for inputs with labelId containing 'v-'
+    if (!emailInput) {
+      console.log('  No non-filter field found, looking for inputs with v- label ids...');
+      for (let i = 0; i < emailLabelCount; i++) {
+        const label = allEmailLabels.nth(i);
+        const labelId = await label.getAttribute('id').catch(() => '');
+        
+        if (labelId && labelId.startsWith('v-')) {
+          const input = page.locator(`input[aria-labelledby="${labelId}"]:not([readonly])`).first();
+          const inputVisible = await input.isVisible({ timeout: 1000 }).catch(() => false);
+          if (inputVisible) {
+            emailLabel = label;
+            emailInput = input;
+            console.log(`  ✓ Selected E-Mail input with v- label id at index ${i}`);
+            break;
+          }
+        }
+      }
+    }
+    
+    // Last resort: check if there's an email-type input visible on the page
+    if (!emailInput) {
+      console.log('  No labeled E-Mail field found, checking for any email-type inputs...');
+      const emailTypeInputs = page.locator('input[type="email"]:visible:not([readonly])');
+      const emailTypeCount = await emailTypeInputs.count();
+      console.log(`  Found ${emailTypeCount} email-type inputs`);
+      if (emailTypeCount > 0) {
+        emailInput = emailTypeInputs.first();
+        console.log(`  ✓ Using first email-type input`);
+      }
+    }
+    
+    if (!emailInput) {
+      console.log('⚠ E-Mail-Adresse field not found or not visible - skipping');
+    } else {
+      // Get current value
+      const currentEmailValue = await emailInput.inputValue().catch(() => '') || '';
+      console.log(`Current E-Mail-Adresse value: "${currentEmailValue}"`);
+      
+      // Store original value for restoration
+      originalValues['E-Mail-Adresse'] = currentEmailValue;
+      
+      // Create timestamp
+      const now = new Date();
+      const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, 19);
+      const newEmailValue = `Testmail-${timestamp}@example.com`;
+      
+      // Clear and fill with new value
+      await emailInput.click();
+      await page.waitForTimeout(200);
+      
+      // Try clearing with keyboard
+      await page.keyboard.press('Control+A');
+      await page.keyboard.press('Backspace');
+      
+      // Type the new value character by character
+      await page.keyboard.type(newEmailValue, { delay: 50 });
+      
+      // Wait a bit to let the value settle
+      await page.waitForTimeout(300);
+      
+      // Check the value immediately after typing
+      const valueAfterTyping = await emailInput.inputValue().catch(() => '');
+      console.log(`Value immediately after typing: "${valueAfterTyping}"`);
+      
+      await page.keyboard.press('Tab'); // Leave field to trigger save
+      console.log(`✓ Changed E-Mail-Adresse from "${currentEmailValue}" to "${newEmailValue}"`);
+      
+      // Wait for auto-save
+      await page.waitForTimeout(1000);
+      
+      // Verify the change
+      const updatedEmailValue = await emailInput.inputValue().catch(() => '');
+      console.log(`Updated E-Mail-Adresse value: "${updatedEmailValue}"`);
+    }
+
     console.log('✓ Test completed successfully');
     } finally {
       // Restore original values
@@ -366,6 +722,200 @@ test.describe('Student parents/legal guardians', () => {
           }
         } catch (error) {
           console.log(`⚠ Could not restore Titel: ${error}`);
+        }
+      }
+
+      if (originalValues['Name'] !== undefined) {
+        try {
+          // Find the Name input again - look for one with a value
+          const allNameLabels = page.locator('span').filter({ hasText: /^Name$/ });
+          const nameLabelCount = await allNameLabels.count();
+          
+          let nameInput = null;
+          for (let i = 0; i < nameLabelCount; i++) {
+            const label = allNameLabels.nth(i);
+            const labelId = await label.getAttribute('id').catch(() => '');
+            
+            let input;
+            if (labelId) {
+              input = page.locator(`input[aria-labelledby="${labelId}"]:not([readonly])`).first();
+            } else {
+              const container = label.locator('xpath=ancestor::div[contains(@class, "flex") or contains(@class, "col")]').first();
+              input = container.locator('input[type="text"]:not([readonly])').first();
+            }
+            
+            const inputVisible = await input.isVisible({ timeout: 1000 }).catch(() => false);
+            if (inputVisible) {
+              const inputValue = await input.inputValue().catch(() => '');
+              // Look for the input that was modified (should contain "Testname-")
+              if (inputValue && inputValue.includes('Testname-')) {
+                nameInput = input;
+                break;
+              }
+            }
+          }
+          
+          // If we didn't find the modified one, try to find any input with a value
+          if (!nameInput) {
+            for (let i = 0; i < nameLabelCount; i++) {
+              const label = allNameLabels.nth(i);
+              const labelId = await label.getAttribute('id').catch(() => '');
+              
+              let input;
+              if (labelId) {
+                input = page.locator(`input[aria-labelledby="${labelId}"]:not([readonly])`).first();
+              } else {
+                const container = label.locator('xpath=ancestor::div[contains(@class, "flex") or contains(@class, "col")]').first();
+                input = container.locator('input[type="text"]:not([readonly])').first();
+              }
+              
+              const inputVisible = await input.isVisible({ timeout: 1000 }).catch(() => false);
+              if (inputVisible) {
+                const inputValue = await input.inputValue().catch(() => '');
+                if (inputValue && inputValue.trim().length > 0) {
+                  nameInput = input;
+                  break;
+                }
+              }
+            }
+          }
+          
+          if (nameInput && await nameInput.isVisible({ timeout: 2000 })) {
+            await nameInput.click();
+            await page.waitForTimeout(200);
+            await page.keyboard.press('Control+A');
+            await page.keyboard.press('Backspace');
+            await page.keyboard.type(originalValues['Name'], { delay: 50 });
+            await page.keyboard.press('Tab'); // Leave field to trigger save
+            console.log(`✓ Restored Name to "${originalValues['Name']}"`);
+            await page.waitForTimeout(1000); // Wait for auto-save
+          }
+        } catch (error) {
+          console.log(`⚠ Could not restore Name: ${error}`);
+        }
+      }
+
+      if (originalValues['Vorname'] !== undefined) {
+        try {
+          // Find the Vorname input again - look for one with a value
+          const allVornameLabels = page.locator('span').filter({ hasText: /^Vorname$/ });
+          const vornameLabelCount = await allVornameLabels.count();
+          
+          let vornameInput = null;
+          for (let i = 0; i < vornameLabelCount; i++) {
+            const label = allVornameLabels.nth(i);
+            const labelId = await label.getAttribute('id').catch(() => '');
+            
+            let input;
+            if (labelId) {
+              input = page.locator(`input[aria-labelledby="${labelId}"]:not([readonly])`).first();
+            } else {
+              const container = label.locator('xpath=ancestor::div[contains(@class, "flex") or contains(@class, "col")]').first();
+              input = container.locator('input[type="text"]:not([readonly])').first();
+            }
+            
+            const inputVisible = await input.isVisible({ timeout: 1000 }).catch(() => false);
+            if (inputVisible) {
+              const inputValue = await input.inputValue().catch(() => '');
+              // Look for the input that was modified (should contain "Testvorname-")
+              if (inputValue && inputValue.includes('Testvorname-')) {
+                vornameInput = input;
+                break;
+              }
+            }
+          }
+          
+          // If we didn't find the modified one, try to find any input with a value
+          if (!vornameInput) {
+            for (let i = 0; i < vornameLabelCount; i++) {
+              const label = allVornameLabels.nth(i);
+              const labelId = await label.getAttribute('id').catch(() => '');
+              
+              let input;
+              if (labelId) {
+                input = page.locator(`input[aria-labelledby="${labelId}"]:not([readonly])`).first();
+              } else {
+                const container = label.locator('xpath=ancestor::div[contains(@class, "flex") or contains(@class, "col")]').first();
+                input = container.locator('input[type="text"]:not([readonly])').first();
+              }
+              
+              const inputVisible = await input.isVisible({ timeout: 1000 }).catch(() => false);
+              if (inputVisible) {
+                const inputValue = await input.inputValue().catch(() => '');
+                if (inputValue && inputValue.trim().length > 0) {
+                  vornameInput = input;
+                  break;
+                }
+              }
+            }
+          }
+          
+          if (vornameInput && await vornameInput.isVisible({ timeout: 2000 })) {
+            await vornameInput.click();
+            await page.waitForTimeout(200);
+            await page.keyboard.press('Control+A');
+            await page.keyboard.press('Backspace');
+            await page.keyboard.type(originalValues['Vorname'], { delay: 50 });
+            await page.keyboard.press('Tab'); // Leave field to trigger save
+            console.log(`✓ Restored Vorname to "${originalValues['Vorname']}"`);
+            await page.waitForTimeout(1000); // Wait for auto-save
+          }
+        } catch (error) {
+          console.log(`⚠ Could not restore Vorname: ${error}`);
+        }
+      }
+
+      if (originalValues['E-Mail-Adresse'] !== undefined) {
+        try {
+          // Find the E-Mail-Adresse input again - try email-type inputs first
+          let emailInput = null;
+          
+          const emailTypeInputs = page.locator('input[type="email"]:visible:not([readonly])');
+          const emailTypeCount = await emailTypeInputs.count();
+          
+          if (emailTypeCount > 0) {
+            emailInput = emailTypeInputs.first();
+            console.log(`  Found email-type input for restoration`);
+          } else {
+            // Fallback to label-based search
+            const allEmailLabels = page.locator('span').filter({ hasText: /^E-Mail-Adresse$|^E-Mail$|^Email$|^E-mail$/ });
+            const emailLabelCount = await allEmailLabels.count();
+            
+            for (let i = 0; i < emailLabelCount; i++) {
+              const label = allEmailLabels.nth(i);
+              const labelId = await label.getAttribute('id').catch(() => '');
+              
+              let input;
+              if (labelId) {
+                input = page.locator(`input[aria-labelledby="${labelId}"]:not([readonly])`).first();
+              } else {
+                const container = label.locator('xpath=ancestor::div[contains(@class, "flex") or contains(@class, "col")]').first();
+                input = container.locator('input[type="text"]:not([readonly]), input[type="email"]:not([readonly])').first();
+              }
+              
+              const inputVisible = await input.isVisible({ timeout: 1000 }).catch(() => false);
+              if (inputVisible) {
+                const inputValue = await input.inputValue().catch(() => '');
+                // Look for the input that was modified (should contain "Testmail-") or just any visible one
+                if (inputValue && (inputValue.includes('Testmail-') || inputValue.includes('@'))) {
+                  emailInput = input;
+                  break;
+                }
+              }
+            }
+          }
+          
+          if (emailInput && await emailInput.isVisible({ timeout: 2000 })) {
+            await emailInput.click();
+            await page.waitForTimeout(200);
+            // Use fill instead of keyboard typing for speed
+            await emailInput.fill(originalValues['E-Mail-Adresse']);
+            await page.keyboard.press('Tab'); // Leave field to trigger save
+            console.log(`✓ Restored E-Mail-Adresse to "${originalValues['E-Mail-Adresse']}"`);
+            await page.waitForTimeout(1000); // Wait for auto-save
+          }
+        } catch (error) {
+          console.log(`⚠ Could not restore E-Mail-Adresse: ${error}`);
         }
       }
     }

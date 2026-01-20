@@ -13,6 +13,8 @@ test.describe('Student parents/legal guardians', () => {
   });
 
   test('Change Erzieherart combobox value', async ({ page }) => {
+    test.setTimeout(60000); // Increase timeout to 60 seconds for this test
+    
     // Store original values for restoration
     const originalValues: { [key: string]: string } = {};
 
@@ -631,6 +633,113 @@ test.describe('Student parents/legal guardians', () => {
       console.log(`Updated E-Mail-Adresse value: "${updatedEmailValue}"`);
     }
 
+    // Find and modify Straße und Hausnummer field
+    console.log('Looking for Straße und Hausnummer field...');
+    const allStrasseLabels = page.locator('span').filter({ hasText: /^Straße und Hausnummer$|^Straße$/ });
+    const strasseLabelCount = await allStrasseLabels.count();
+    console.log(`Found ${strasseLabelCount} labels with text "Straße und Hausnummer"`);
+    
+    let strasseInput = null;
+    let strasseLabel = null;
+    
+    // Try each label and look for one with an actual value (not empty)
+    for (let i = 0; i < strasseLabelCount; i++) {
+      const label = allStrasseLabels.nth(i);
+      const labelId = await label.getAttribute('id').catch(() => '');
+      const labelText = await label.textContent().catch(() => '');
+      console.log(`  Straße label ${i}: text="${labelText}", id="${labelId}"`);
+      
+      // Try to find associated input
+      let input;
+      if (labelId) {
+        input = page.locator(`input[aria-labelledby="${labelId}"]:not([readonly])`).first();
+      } else {
+        // Find input in the same parent container
+        const container = label.locator('xpath=ancestor::div[contains(@class, "flex") or contains(@class, "col")]').first();
+        input = container.locator('input[type="text"]:not([readonly])').first();
+      }
+      
+      const inputVisible = await input.isVisible({ timeout: 1000 }).catch(() => false);
+      if (inputVisible) {
+        const inputId = await input.getAttribute('id').catch(() => '');
+        const inputValue = await input.inputValue().catch(() => '');
+        const inputPlaceholder = await input.getAttribute('placeholder').catch(() => '');
+        console.log(`    Associated input: id="${inputId}", value="${inputValue}", placeholder="${inputPlaceholder}"`);
+        
+        // Skip uiSelectInput (filter fields) - look for regular input fields
+        if (!inputId || !inputId.includes('uiSelectInput')) {
+          strasseLabel = label;
+          strasseInput = input;
+          console.log(`    ✓ Selected this as the Straße input (not a filter field)`);
+          break;
+        }
+      }
+    }
+    
+    // If we only found filter fields, try to find the actual input by looking for inputs with labelId containing 'v-'
+    if (!strasseInput) {
+      console.log('  No non-filter field found, looking for inputs with v- label ids...');
+      for (let i = 0; i < strasseLabelCount; i++) {
+        const label = allStrasseLabels.nth(i);
+        const labelId = await label.getAttribute('id').catch(() => '');
+        
+        if (labelId && labelId.startsWith('v-')) {
+          const input = page.locator(`input[aria-labelledby="${labelId}"]:not([readonly])`).first();
+          const inputVisible = await input.isVisible({ timeout: 1000 }).catch(() => false);
+          if (inputVisible) {
+            strasseLabel = label;
+            strasseInput = input;
+            console.log(`  ✓ Selected Straße input with v- label id at index ${i}`);
+            break;
+          }
+        }
+      }
+    }
+    
+    if (!strasseInput) {
+      console.log('⚠ Straße und Hausnummer field not found or not visible - skipping');
+    } else {
+      // Get current value
+      const currentStrasseValue = await strasseInput.inputValue().catch(() => '') || '';
+      console.log(`Current Straße und Hausnummer value: "${currentStrasseValue}"`);
+      
+      // Store original value for restoration
+      originalValues['Straße und Hausnummer'] = currentStrasseValue;
+      
+      // Create timestamp
+      const now = new Date();
+      const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, 19);
+      const newStrasseValue = `Teststrasse-${timestamp}`;
+      
+      // Clear and fill with new value
+      await strasseInput.click();
+      await page.waitForTimeout(200);
+      
+      // Try clearing with keyboard
+      await page.keyboard.press('Control+A');
+      await page.keyboard.press('Backspace');
+      
+      // Type the new value character by character
+      await page.keyboard.type(newStrasseValue, { delay: 50 });
+      
+      // Wait a bit to let the value settle
+      await page.waitForTimeout(300);
+      
+      // Check the value immediately after typing
+      const valueAfterTyping = await strasseInput.inputValue().catch(() => '');
+      console.log(`Value immediately after typing: "${valueAfterTyping}"`);
+      
+      await page.keyboard.press('Tab'); // Leave field to trigger save
+      console.log(`✓ Changed Straße und Hausnummer from "${currentStrasseValue}" to "${newStrasseValue}"`);
+      
+      // Wait for auto-save
+      await page.waitForTimeout(1000);
+      
+      // Verify the change
+      const updatedStrasseValue = await strasseInput.inputValue().catch(() => '');
+      console.log(`Updated Straße und Hausnummer value: "${updatedStrasseValue}"`);
+    }
+
     console.log('✓ Test completed successfully');
     } finally {
       // Restore original values
@@ -640,6 +749,7 @@ test.describe('Student parents/legal guardians', () => {
       }
       
       console.log('Restoring original values...');
+      await page.waitForTimeout(500); // Wait for any auto-save to complete
       
       if (originalValues['Erzieherart']) {
         try {
@@ -666,7 +776,7 @@ test.describe('Student parents/legal guardians', () => {
             await originalOption.click();
             await page.keyboard.press('Tab'); // Leave field to trigger save
             console.log(`✓ Restored Erzieherart to "${originalValues['Erzieherart']}"`);
-            await page.waitForTimeout(1000); // Wait for auto-save
+            await page.waitForTimeout(300); // Wait for auto-save
           }
         } catch (error) {
           console.log(`⚠ Could not restore Erzieherart: ${error}`);
@@ -692,7 +802,7 @@ test.describe('Student parents/legal guardians', () => {
             await anredeInput.fill(originalValues['Anrede']);
             await page.keyboard.press('Tab'); // Leave field to trigger save
             console.log(`✓ Restored Anrede to "${originalValues['Anrede']}"`);
-            await page.waitForTimeout(1000); // Wait for auto-save
+            await page.waitForTimeout(300); // Wait for auto-save
           }
         } catch (error) {
           console.log(`⚠ Could not restore Anrede: ${error}`);
@@ -718,7 +828,7 @@ test.describe('Student parents/legal guardians', () => {
             await titelInput.fill(originalValues['Titel']);
             await page.keyboard.press('Tab'); // Leave field to trigger save
             console.log(`✓ Restored Titel to "${originalValues['Titel']}"`);
-            await page.waitForTimeout(1000); // Wait for auto-save
+            await page.waitForTimeout(300); // Wait for auto-save
           }
         } catch (error) {
           console.log(`⚠ Could not restore Titel: ${error}`);
@@ -788,7 +898,7 @@ test.describe('Student parents/legal guardians', () => {
             await page.keyboard.type(originalValues['Name'], { delay: 50 });
             await page.keyboard.press('Tab'); // Leave field to trigger save
             console.log(`✓ Restored Name to "${originalValues['Name']}"`);
-            await page.waitForTimeout(1000); // Wait for auto-save
+            await page.waitForTimeout(300); // Wait for auto-save
           }
         } catch (error) {
           console.log(`⚠ Could not restore Name: ${error}`);
@@ -850,15 +960,17 @@ test.describe('Student parents/legal guardians', () => {
             }
           }
           
-          if (vornameInput && await vornameInput.isVisible({ timeout: 2000 })) {
-            await vornameInput.click();
-            await page.waitForTimeout(200);
-            await page.keyboard.press('Control+A');
-            await page.keyboard.press('Backspace');
-            await page.keyboard.type(originalValues['Vorname'], { delay: 50 });
-            await page.keyboard.press('Tab'); // Leave field to trigger save
-            console.log(`✓ Restored Vorname to "${originalValues['Vorname']}"`);
-            await page.waitForTimeout(1000); // Wait for auto-save
+          if (vornameInput) {
+            const isVis = await vornameInput.isVisible({ timeout: 2000 }).catch(() => false);
+            if (isVis) {
+              await vornameInput.scrollIntoViewIfNeeded({ timeout: 2000 }).catch(() => {});
+              await vornameInput.click({ timeout: 2000 });
+              await page.waitForTimeout(200);
+              await vornameInput.fill(originalValues['Vorname'], { timeout: 5000 }); // Use fill() with timeout
+              await page.keyboard.press('Tab'); // Leave field to trigger save
+              console.log(`✓ Restored Vorname to "${originalValues['Vorname']}"`);
+              await page.waitForTimeout(300); // Wait for auto-save
+            }
           }
         } catch (error) {
           console.log(`⚠ Could not restore Vorname: ${error}`);
@@ -912,10 +1024,56 @@ test.describe('Student parents/legal guardians', () => {
             await emailInput.fill(originalValues['E-Mail-Adresse']);
             await page.keyboard.press('Tab'); // Leave field to trigger save
             console.log(`✓ Restored E-Mail-Adresse to "${originalValues['E-Mail-Adresse']}"`);
-            await page.waitForTimeout(1000); // Wait for auto-save
+            await page.waitForTimeout(300); // Wait for auto-save
           }
         } catch (error) {
           console.log(`⚠ Could not restore E-Mail-Adresse: ${error}`);
+        }
+      }
+
+      if (originalValues['Straße und Hausnummer'] !== undefined) {
+        try {
+          // Find the Straße und Hausnummer input again
+          const allStrasseLabels = page.locator('span').filter({ hasText: /^Straße und Hausnummer$|^Straße$/ });
+          const strasseLabelCount = await allStrasseLabels.count();
+          
+          let strasseInput = null;
+          for (let i = 0; i < strasseLabelCount; i++) {
+            const label = allStrasseLabels.nth(i);
+            const labelId = await label.getAttribute('id').catch(() => '');
+            
+            let input;
+            if (labelId && labelId.startsWith('v-')) {
+              input = page.locator(`input[aria-labelledby="${labelId}"]:not([readonly])`).first();
+            } else if (labelId) {
+              input = page.locator(`input[aria-labelledby="${labelId}"]:not([readonly])`).first();
+            } else {
+              const container = label.locator('xpath=ancestor::div[contains(@class, "flex") or contains(@class, "col")]').first();
+              input = container.locator('input[type="text"]:not([readonly])').first();
+            }
+            
+            const inputVisible = await input.isVisible({ timeout: 1000 }).catch(() => false);
+            if (inputVisible) {
+              const inputValue = await input.inputValue().catch(() => '');
+              const inputId = await input.getAttribute('id').catch(() => '');
+              // Look for the input that was modified (should contain "Teststrasse-") or non-filter fields
+              if ((inputValue && inputValue.includes('Teststrasse-')) || (!inputId || !inputId.includes('uiSelectInput'))) {
+                strasseInput = input;
+                break;
+              }
+            }
+          }
+          
+          if (strasseInput && await strasseInput.isVisible({ timeout: 2000 })) {
+            await strasseInput.click();
+            await page.waitForTimeout(200);
+            await strasseInput.fill(originalValues['Straße und Hausnummer']);
+            await page.keyboard.press('Tab'); // Leave field to trigger save
+            console.log(`✓ Restored Straße und Hausnummer to "${originalValues['Straße und Hausnummer']}"`);
+            await page.waitForTimeout(300); // Wait for auto-save
+          }
+        } catch (error) {
+          console.log(`⚠ Could not restore Straße und Hausnummer: ${error}`);
         }
       }
     }

@@ -15,7 +15,7 @@ Dieses Repository enthält eine umfassende E2E-Test-Suite für den SVWS (Schulve
 - ✅ **Änderungen speichern**: Auto-Save funktioniert nahtlos, Änderungen persistieren sofort
 - ✅ **Telefonnummern bearbeiten**: "Weitere Telefonnummern" Modal mit Feldänderungen (Telefonart, Telefonnummer, Bemerkung, Gesperrt-Status)
 - ✅ **Sonstiges-Tab (Vermerke, Einwilligungen, Lernplattformen)**: Erstellen von Vermerken, Auswahl von Vermerk-Typen, Verwaltung von Foto-Einwilligungen, Aktivierung von Lernplattform-Zustimmungen
-- ✅ **Erziehungsberechtigte**: Tests für Änderungen an Eltern-/Erziehungsberechtigten-Daten (Erzieherart, Anrede, Titel, Name, Vorname, E-Mail-Adresse, Straße und Hausnummer)
+- ✅ **Erziehungsberechtigte**: Tests für Änderungen an Eltern-/Erziehungsberechtigten-Daten (9 Felder: Erzieherart, Anrede, Titel, Name, Vorname, E-Mail-Adresse, Straße und Hausnummer, Staatsangehörigkeit, Wohnort)
 - ✅ **Automatisches Cleanup**: Testdaten werden nach Tests automatisch zurückgesetzt (optional behalten mit KEEP_TEST_DATA=true)
 - ✅ **Cross-Browser Testing**: Tests laufen auf Chromium und Firefox
 - ✅ **Feldabdeckung**: Umfassende Tests für Text-, Combobox-, Date-, Checkbox- und Modal-Felder
@@ -165,7 +165,7 @@ Die Test-Suite folgt einem **minimalen, fokussierten Ansatz**:
   - `student-editvalues.spec.ts`: 26+ kritische Felder im Hauptformular
   - `student-phone-test.spec.ts`: Telefonnummern-Modal und Feldänderungen
   - `student-miscellaneous-notes.spec.ts`: Sonstiges-Tab (Vermerke, Einwilligungen, Lernplattformen)
-  - `student-parents-test.spec.ts`: Erziehungsberechtigte (Erzieherart, Anrede, Titel, Name, Vorname, E-Mail-Adresse, Straße und Hausnummer)
+  - `student-parents-test.spec.ts`: Erziehungsberechtigte (9 Felder: Erzieherart, Anrede, Titel, Name, Vorname, E-Mail-Adresse, Straße und Hausnummer, Staatsangehörigkeit, Wohnort)
 - **Automatischer Speicher**: SVWS speichert Änderungen automatisch (kein manueller Save-Button)
 - **Intelligentes Reset**: Original-Werte werden vor dem Test erfasst und nach dem Test wiederhergestellt
 - **Cross-Browser**: Tests laufen auf Chromium und Firefox für maximale Abdeckung
@@ -250,9 +250,12 @@ Die Test-Suite folgt einem **minimalen, fokussierten Ansatz**:
 ✅ Vorname (Textinput: "Testvorname-{timestamp}")
 ✅ E-Mail-Adresse (Email Input: "Testmail-{timestamp}@example.com")
 ✅ Straße und Hausnummer (Textinput: "Teststrasse-{timestamp}")
-✅ Automatisches Speichern (Tab-Taste triggert Auto-Save)
-✅ Automatisches Zurücksetzen aller Felder auf Original-Werte
+✅ Staatsangehörigkeit (Combobox: "Australien" - mit komplexer Option-Liste)
+✅ Wohnort (Combobox: "42287 Wuppertal" - mit force-click für bestehende Werte)
+✅ Automatisches Speichern (Auto-Save nach Feldänderungen)
+✅ Automatisches Zurücksetzen aller 9 Felder auf Original-Werte
 ✅ Performance-Optimierung: fill() statt keyboard.type() für schnellere Testausführung
+✅ Robuste Combobox-Handhabung: force-click für Felder mit angezeigten Werten
 ```
 
 ### Bekannte Einschränkungen

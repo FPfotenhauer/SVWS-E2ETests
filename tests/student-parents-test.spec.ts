@@ -740,8 +740,120 @@ test.describe('Student parents/legal guardians', () => {
       console.log(`Updated Straße und Hausnummer value: "${updatedStrasseValue}"`);
     }
 
+    // Find and modify Staatsangehörigkeit combobox
+    console.log('Looking for Staatsangehörigkeit field...');
+    const staatsangehörigkeitLabel = page.locator('span:has-text("Staatsangehörigkeit")').first();
+    const staatsangehörigkeitLabelId = await staatsangehörigkeitLabel.getAttribute('id').catch(() => '');
+    console.log(`Staatsangehörigkeit label id: ${staatsangehörigkeitLabelId}`);
+    
+    let staatsangehörigkeitInput;
+    if (staatsangehörigkeitLabelId) {
+      staatsangehörigkeitInput = page.locator(`input[role="combobox"][aria-labelledby="${staatsangehörigkeitLabelId}"]`);
+    } else {
+      staatsangehörigkeitInput = page.locator('*:has-text("Staatsangehörigkeit") input[role="combobox"]').first();
+    }
+    
+    const staatsangehörigkeitInputVisible = await staatsangehörigkeitInput.isVisible({ timeout: 2000 }).catch(() => false);
+    console.log(`Staatsangehörigkeit input visible: ${staatsangehörigkeitInputVisible}`);
+    
+    if (!staatsangehörigkeitInputVisible) {
+      console.log('⚠ Staatsangehörigkeit field not found or not visible - skipping');
+    } else {
+      // Get current displayed value (from the span, not the input value) - same as Erzieherart
+      const currentStaatsangehörigkeitDisplayValue = await page.locator('*:has-text("Staatsangehörigkeit") ~ * .ui-select--selection .truncate').first().textContent().catch(() => '') || '';
+      console.log(`Current Staatsangehörigkeit displayed value: "${currentStaatsangehörigkeitDisplayValue}"`);
+      
+      // Store original value for restoration
+      originalValues['Staatsangehörigkeit'] = currentStaatsangehörigkeitDisplayValue;
+
+      // Click on the input and type "Australien"
+      await staatsangehörigkeitInput.click();
+      console.log('✓ Clicked on Staatsangehörigkeit input');
+      await page.waitForTimeout(300);
+      
+      // Type "Australien" to filter the options
+      await staatsangehörigkeitInput.fill('Australien');
+      await page.waitForTimeout(500);
+      
+      // Click on the "Australien" option from the dropdown
+      const options = page.locator('[role="option"]');
+      const australienOption = options.filter({ hasText: /Australien/i }).first();
+      
+      if (await australienOption.isVisible({ timeout: 2000 })) {
+        await australienOption.click();
+        console.log(`✓ Changed Staatsangehörigkeit from "${currentStaatsangehörigkeitDisplayValue}" to "Australien"`);
+      } else {
+        // If not visible, press Enter to select
+        await page.keyboard.press('Enter');
+        console.log(`✓ Changed Staatsangehörigkeit from "${currentStaatsangehörigkeitDisplayValue}" to "Australien" (via Enter)`);
+      }
+      
+      
+      // Wait for auto-save
+      await page.waitForTimeout(1000);
+
+      console.log(`Updated Staatsangehörigkeit value: "Australien"`);
+    }
+
+    // Find and modify Wohnort combobox
+    console.log('Looking for Wohnort field...');
+    const wohnortLabel = page.locator('span:has-text("Wohnort")').first();
+    const wohnortLabelId = await wohnortLabel.getAttribute('id').catch(() => '');
+    console.log(`Wohnort label id: ${wohnortLabelId}`);
+    
+    let wohnortInput;
+    if (wohnortLabelId) {
+      wohnortInput = page.locator(`input[role="combobox"][aria-labelledby="${wohnortLabelId}"]`);
+    } else {
+      wohnortInput = page.locator('*:has-text("Wohnort") input[role="combobox"]').first();
+    }
+    
+    const wohnortInputVisible = await wohnortInput.isVisible({ timeout: 2000 }).catch(() => false);
+    console.log(`Wohnort input visible: ${wohnortInputVisible}`);
+    
+    if (!wohnortInputVisible) {
+      console.log('⚠ Wohnort field not found or not visible - skipping');
+    } else {
+      // Get current displayed value (from the span, not the input value) - same as Erzieherart
+      const currentWohnortDisplayValue = await page.locator('*:has-text("Wohnort") ~ * .ui-select--selection .truncate').first().textContent().catch(() => '') || '';
+      console.log(`Current Wohnort displayed value: "${currentWohnortDisplayValue}"`);
+      
+      // Store original value for restoration
+      originalValues['Wohnort'] = currentWohnortDisplayValue;
+
+      // Click on the input and type "42287 Wuppertal" (force click because displayed value may intercept)
+      await wohnortInput.click({ force: true });
+      console.log('✓ Clicked on Wohnort input');
+      await page.waitForTimeout(300);
+      
+      // Type "42287 Wuppertal" to filter the options
+      await wohnortInput.fill('42287 Wuppertal');
+      await page.waitForTimeout(500);
+      
+      // Click on the "42287 Wuppertal" option from the dropdown
+      const options = page.locator('[role="option"]');
+      const wuppertalOption = options.filter({ hasText: /42287 Wuppertal/i }).first();
+      
+      if (await wuppertalOption.isVisible({ timeout: 2000 })) {
+        await wuppertalOption.click();
+        console.log(`✓ Changed Wohnort from "${currentWohnortDisplayValue}" to "42287 Wuppertal"`);
+      } else {
+        // If not visible, press Enter to select
+        await page.keyboard.press('Enter');
+        console.log(`✓ Changed Wohnort from "${currentWohnortDisplayValue}" to "42287 Wuppertal" (via Enter)`);
+      }
+      
+      // Wait for auto-save
+      await page.waitForTimeout(1000);
+
+      console.log(`Updated Wohnort value: "42287 Wuppertal"`);
+    }
+
     console.log('✓ Test completed successfully');
-    } finally {
+  } catch (error) {
+    console.error('Test failed:', error);
+    throw error;
+  } finally {
       // Restore original values
       if (keepTestData) {
         console.log('Keeping test data changes (KEEP_TEST_DATA=true)');
@@ -1074,6 +1186,124 @@ test.describe('Student parents/legal guardians', () => {
           }
         } catch (error) {
           console.log(`⚠ Could not restore Straße und Hausnummer: ${error}`);
+        }
+      }
+
+      if (originalValues['Staatsangehörigkeit'] !== undefined) {
+        try {
+          // Find the Staatsangehörigkeit input again
+          const staatsangehörigkeitLabel = page.locator('span:has-text("Staatsangehörigkeit")').first();
+          const labelId = await staatsangehörigkeitLabel.getAttribute('id').catch(() => '');
+          
+          let staatsangehörigkeitInput;
+          if (labelId) {
+            staatsangehörigkeitInput = page.locator(`input[role="combobox"][aria-labelledby="${labelId}"]`);
+          } else {
+            staatsangehörigkeitInput = page.locator('*:has-text("Staatsangehörigkeit") input[role="combobox"]').first();
+          }
+          
+          // If original value was empty, clear the field completely
+          if (originalValues['Staatsangehörigkeit'] === '') {
+            // Click the input to focus it
+            await staatsangehörigkeitInput.click({ force: true });
+            await page.waitForTimeout(200);
+            
+            // Select all and delete
+            await staatsangehörigkeitInput.press('Control+A');
+            await page.waitForTimeout(100);
+            await staatsangehörigkeitInput.press('Delete');
+            await page.waitForTimeout(200);
+            
+            // Press Escape to close dropdown and save
+            await page.keyboard.press('Escape');
+            await page.waitForTimeout(500); // Wait for auto-save
+            
+            console.log(`✓ Restored Staatsangehörigkeit to "" (empty)`);
+          } else {
+            // Click to open dropdown (force click because displayed value may intercept)
+            await staatsangehörigkeitInput.click({ force: true, timeout: 2000 });
+            await page.waitForTimeout(300);
+            
+            // Type the original value to filter
+            await staatsangehörigkeitInput.fill(originalValues['Staatsangehörigkeit']);
+            await page.waitForTimeout(500);
+            
+            // Find and click the original value
+            const options = page.locator('[role="option"]');
+            const originalOption = options.filter({ hasText: new RegExp(`^${originalValues['Staatsangehörigkeit']}$`) }).first();
+            
+            if (await originalOption.isVisible({ timeout: 2000 })) {
+              await originalOption.click();
+              console.log(`✓ Restored Staatsangehörigkeit to "${originalValues['Staatsangehörigkeit']}"`);
+              await page.waitForTimeout(300); // Wait for auto-save
+            } else {
+              // If not visible, press Enter to select
+              await page.keyboard.press('Enter');
+              console.log(`✓ Restored Staatsangehörigkeit to "${originalValues['Staatsangehörigkeit']}" (via Enter)`);
+              await page.waitForTimeout(300); // Wait for auto-save
+            }
+          }
+        } catch (error) {
+          console.log(`⚠ Could not restore Staatsangehörigkeit: ${error}`);
+        }
+      }
+
+      if (originalValues['Wohnort'] !== undefined) {
+        try {
+          // Find the Wohnort input again
+          const wohnortLabel = page.locator('span:has-text("Wohnort")').first();
+          const labelId = await wohnortLabel.getAttribute('id').catch(() => '');
+          
+          let wohnortInput;
+          if (labelId) {
+            wohnortInput = page.locator(`input[role="combobox"][aria-labelledby="${labelId}"]`);
+          } else {
+            wohnortInput = page.locator('*:has-text("Wohnort") input[role="combobox"]').first();
+          }
+          
+          // If original value was empty, clear the field completely  
+          if (originalValues['Wohnort'] === '') {
+            // Click the input to focus it
+            await wohnortInput.click({ force: true });
+            await page.waitForTimeout(200);
+            
+            // Select all and delete
+            await wohnortInput.press('Control+A');
+            await page.waitForTimeout(100);
+            await wohnortInput.press('Delete');
+            await page.waitForTimeout(200);
+            
+            // Press Escape to close dropdown and save
+            await page.keyboard.press('Escape');
+            await page.waitForTimeout(500); // Wait for auto-save
+            
+            console.log(`✓ Restored Wohnort to "" (empty)`);
+          } else {
+            // Click to open dropdown (force click because displayed value may intercept)
+            await wohnortInput.click({ force: true, timeout: 2000 });
+            await page.waitForTimeout(300);
+            
+            // Type the original value to filter
+            await wohnortInput.fill(originalValues['Wohnort']);
+            await page.waitForTimeout(500);
+            
+            // Find and click the original value
+            const options = page.locator('[role="option"]');
+            const originalOption = options.filter({ hasText: new RegExp(`^${originalValues['Wohnort']}$`) }).first();
+            
+            if (await originalOption.isVisible({ timeout: 2000 })) {
+              await originalOption.click();
+              console.log(`✓ Restored Wohnort to "${originalValues['Wohnort']}"`);
+              await page.waitForTimeout(300); // Wait for auto-save
+            } else {
+              // If not visible, press Enter to select
+              await page.keyboard.press('Enter');
+              console.log(`✓ Restored Wohnort to "${originalValues['Wohnort']}" (via Enter)`);
+              await page.waitForTimeout(300); // Wait for auto-save
+            }
+          }
+        } catch (error) {
+          console.log(`⚠ Could not restore Wohnort: ${error}`);
         }
       }
     }

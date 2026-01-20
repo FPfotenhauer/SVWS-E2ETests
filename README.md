@@ -252,10 +252,12 @@ Die Test-Suite folgt einem **minimalen, fokussierten Ansatz**:
 ✅ Straße und Hausnummer (Textinput: "Teststrasse-{timestamp}")
 ✅ Staatsangehörigkeit (Combobox: "Australien" - mit komplexer Option-Liste)
 ✅ Wohnort (Combobox: "42287 Wuppertal" - mit force-click für bestehende Werte)
+✅ Bemerkungen (Textarea: "Dies ist eine Testbemerkung für die automatisierten Tests.")
 ✅ Automatisches Speichern (Auto-Save nach Feldänderungen)
-✅ Automatisches Zurücksetzen aller 9 Felder auf Original-Werte
+✅ Automatisches Zurücksetzen aller 10 Felder auf Original-Werte
 ✅ Performance-Optimierung: fill() statt keyboard.type() für schnellere Testausführung
 ✅ Robuste Combobox-Handhabung: force-click für Felder mit angezeigten Werten
+✅ Textarea-Unterstützung: Parent-Container-Filter für Textarea-Felder mit Tab-Taste zum Speichern
 ```
 
 ### Bekannte Einschränkungen

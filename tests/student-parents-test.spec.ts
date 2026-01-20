@@ -849,6 +849,39 @@ test.describe('Student parents/legal guardians', () => {
       console.log(`Updated Wohnort value: "42287 Wuppertal"`);
     }
 
+    // Find and modify Bemerkungen textarea
+    console.log('Looking for Bemerkungen field...');
+    
+    // Find the textarea using a more direct approach - look for the parent div containing the Bemerkungen label
+    const bemerkungenTextarea = page.locator('div').filter({ has: page.locator('span:has-text("Bemerkungen")') }).locator('.textarea-input--control').first();
+    
+    const bemerkungenVisible = await bemerkungenTextarea.isVisible({ timeout: 2000 }).catch(() => false);
+    console.log(`Bemerkungen textarea visible: ${bemerkungenVisible}`);
+    
+    if (!bemerkungenVisible) {
+      console.log('⚠ Bemerkungen field not found or not visible - skipping');
+    } else {
+      // Get current value
+      const currentBemerkungenValue = await bemerkungenTextarea.inputValue().catch(() => '') || '';
+      console.log(`Current Bemerkungen value: "${currentBemerkungenValue}"`);
+      
+      // Store original value for restoration
+      originalValues['Bemerkungen'] = currentBemerkungenValue;
+
+      // Click and fill with German sentence
+      await bemerkungenTextarea.click();
+      await bemerkungenTextarea.fill('Dies ist eine Testbemerkung für die automatisierten Tests.');
+      await bemerkungenTextarea.press('Tab'); // Press Tab on the textarea element itself to trigger save
+      console.log(`✓ Changed Bemerkungen from "${currentBemerkungenValue}" to "Dies ist eine Testbemerkung für die automatisierten Tests."`);
+      
+      // Wait for auto-save
+      await page.waitForTimeout(1000);
+
+      // Verify the change
+      const updatedBemerkungenValue = await bemerkungenTextarea.inputValue().catch(() => '');
+      console.log(`Updated Bemerkungen value: "${updatedBemerkungenValue}"`);
+    }
+
     console.log('✓ Test completed successfully');
   } catch (error) {
     console.error('Test failed:', error);
@@ -1306,6 +1339,24 @@ test.describe('Student parents/legal guardians', () => {
           console.log(`⚠ Could not restore Wohnort: ${error}`);
         }
       }
+
+      if (originalValues['Bemerkungen'] !== undefined) {
+        try {
+          // Find the Bemerkungen textarea using the same selector pattern
+          const bemerkungenTextarea = page.locator('div').filter({ has: page.locator('span:has-text("Bemerkungen")') }).locator('.textarea-input--control').first();
+          
+          // Click, clear, and restore original value
+          await bemerkungenTextarea.click({ timeout: 2000 });
+          await page.waitForTimeout(200);
+          await bemerkungenTextarea.fill(originalValues['Bemerkungen']);
+          await bemerkungenTextarea.press('Tab'); // Press Tab on the textarea element itself
+          await page.waitForTimeout(1000); // Wait longer for auto-save to complete
+          console.log(`✓ Restored Bemerkungen to "${originalValues['Bemerkungen']}"`);
+        } catch (error) {
+          console.log(`⚠ Could not restore Bemerkungen: ${error}`);
+        }
+      }
     }
   });
 });
+

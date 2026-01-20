@@ -548,7 +548,7 @@ test.describe('Student parents/legal guardians', () => {
         
         // Skip uiSelectInput (filter fields) - look for regular input fields
         // Prefer inputs with actual values or inputs that don't have uiSelectInput in their id
-        if (!inputId.includes('uiSelectInput')) {
+        if (!inputId || !inputId.includes('uiSelectInput')) {
           emailLabel = label;
           emailInput = input;
           console.log(`    ✓ Selected this as the E-Mail input (not a filter field)`);

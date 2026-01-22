@@ -15,7 +15,7 @@ Dieses Repository enthält eine umfassende E2E-Test-Suite für den SVWS (Schulve
 - ✅ **Änderungen speichern**: Auto-Save funktioniert nahtlos, Änderungen persistieren sofort
 - ✅ **Telefonnummern bearbeiten**: "Weitere Telefonnummern" Modal mit Feldänderungen (Telefonart, Telefonnummer, Bemerkung, Gesperrt-Status)
 - ✅ **Sonstiges-Tab (Vermerke, Einwilligungen, Lernplattformen)**: Erstellen von Vermerken, Auswahl von Vermerk-Typen, Verwaltung von Foto-Einwilligungen, Aktivierung von Lernplattform-Zustimmungen
-- ✅ **Erziehungsberechtigte**: Tests für Änderungen an Eltern-/Erziehungsberechtigten-Daten (9 Felder: Erzieherart, Anrede, Titel, Name, Vorname, E-Mail-Adresse, Straße und Hausnummer, Staatsangehörigkeit, Wohnort)
+- ✅ **Erziehungsberechtigte**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Löschen). Tests für Änderungen an Bestandsdaten sowie Neuanlage via Modal mit komplexer Validierung (Combobox-Abhängigkeiten wie Wohnort/Ortsteil)
 - ✅ **Automatisches Cleanup**: Testdaten werden nach Tests automatisch zurückgesetzt (optional behalten mit KEEP_TEST_DATA=true)
 - ✅ **Cross-Browser Testing**: Tests laufen auf Chromium und Firefox
 - ✅ **Feldabdeckung**: Umfassende Tests für Text-, Combobox-, Date-, Checkbox- und Modal-Felder

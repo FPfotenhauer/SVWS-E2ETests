@@ -57,6 +57,8 @@ const getTodayDate = () => {
 
 test.describe('Student minimal edit', () => {
   test.beforeEach(async ({ page }) => {
+    // Reset originalValues before each test
+    originalValues = {};
     await seedTestData(page);
   });
 

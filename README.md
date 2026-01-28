@@ -13,9 +13,12 @@ Dieses Repository enthält eine umfassende E2E-Test-Suite für den SVWS (Schulve
 - ✅ **Schüler-Auswahl**: Schüler aus Liste auswählen
 - ✅ **Schüler bearbeiten**: Bearbeitung mit automatischem Speichern (26+ Felder)
 - ✅ **Änderungen speichern**: Auto-Save funktioniert nahtlos, Änderungen persistieren sofort
+- ✅ **Telefonnummern bearbeiten**: "Weitere Telefonnummern" Modal mit Feldänderungen (Telefonart, Telefonnummer, Bemerkung, Gesperrt-Status)
+- ✅ **Sonstiges-Tab (Vermerke, Einwilligungen, Lernplattformen)**: Erstellen von Vermerken, Auswahl von Vermerk-Typen, Verwaltung von Foto-Einwilligungen, Aktivierung von Lernplattform-Zustimmungen
+- ✅ **Erziehungsberechtigte**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Löschen). Tests für Änderungen an Bestandsdaten sowie Neuanlage via Modal mit komplexer Validierung (Combobox-Abhängigkeiten wie Wohnort/Ortsteil)
 - ✅ **Automatisches Cleanup**: Testdaten werden nach Tests automatisch zurückgesetzt (optional behalten mit KEEP_TEST_DATA=true)
 - ✅ **Cross-Browser Testing**: Tests laufen auf Chromium und Firefox
-- ✅ **Feldabdeckung**: Umfassende Tests für Text-, Combobox-, Date- und Checkbox-Felder
+- ✅ **Feldabdeckung**: Umfassende Tests für Text-, Combobox-, Date-, Checkbox- und Modal-Felder
 - ✅ **Abhängige Felder**: Tests für bedingt aktivierte Felder (z.B. Migrationshintergrund-abhängige Felder)
 - 🔄 **Schüler erstellen**: Geplant
 - 🔄 **Schüler löschen**: Geplant
@@ -115,8 +118,17 @@ npm test
 ### Spezifische Test-Dateien ausführen
 
 ```bash
-# Nur Schüler-Tests
+# Nur Schüler-Bearbeitungs-Tests (26+ Felder)
 npx playwright test tests/student-editvalues.spec.ts
+
+# Nur Telefonnummern-Modal-Tests
+npx playwright test tests/student-phone-test.spec.ts
+
+# Nur Sonstiges-Tab-Tests (Vermerke, Einwilligungen, Lernplattformen)
+npx playwright test tests/student-miscellaneous-notes.spec.ts
+
+# Nur Erziehungsberechtigte-Tests (Eltern/Erziehungsberechtigte)
+npx playwright test tests/student-parents-test.spec.ts
 
 # Nur in Chromium
 npx playwright test --project=chromium
@@ -130,13 +142,17 @@ npx playwright test --project=firefox
 ```
 SVWS-E2ETests/
 ├── tests/
-│   ├── fixtures.ts                 # Login und Navigations-Helper
-│   ├── test-data.ts               # Reset und Seeding-Utilities
-│   └── student-editvalues.spec.ts # Schüler-Bearbeitungs-Tests (26+ Felder)
-├── playwright.config.ts           # Playwright-Konfiguration (Chromium + Firefox)
-├── tsconfig.json                 # TypeScript-Konfiguration
-├── package.json                  # Abhängigkeiten und Skripte
-└── README.md                     # Diese Datei
+│   ├── fixtures.ts                    # Login und Navigations-Helper
+│   ├── test-data.ts                   # Reset und Seeding-Utilities
+│   ├── student-editvalues.spec.ts     # Schüler-Bearbeitungs-Tests (26+ Felder)
+│   ├── student-phone-test.spec.ts     # Telefonnummern-Modal Tests
+│   ├── student-miscellaneous-notes.spec.ts  # Sonstiges-Tab Tests (Vermerke, Einwilligungen, Lernplattformen)
+│   └── student-parents-test.spec.ts   # Erziehungsberechtigte-Tests (Eltern/Guardians)
+├── playwright.config.ts               # Playwright-Konfiguration (Chromium + Firefox)
+├── tsconfig.json                      # TypeScript-Konfiguration
+├── package.json                       # Abhängigkeiten und Skripte
+├── debug-images/                      # Screenshots und Debug-Artefakte
+└── README.md                          # Diese Datei
 ```
 
 ## 📝 Test-Design
@@ -145,7 +161,11 @@ SVWS-E2ETests/
 
 Die Test-Suite folgt einem **minimalen, fokussierten Ansatz**:
 
-- **Ein Test pro Feature**: `student-editvalues.spec.ts` testet gezielt 26+ kritische Felder
+- **Ein Test pro Feature**: Tests sind gezielt auf spezifische Features ausgerichtet
+  - `student-editvalues.spec.ts`: 26+ kritische Felder im Hauptformular
+  - `student-phone-test.spec.ts`: Telefonnummern-Modal und Feldänderungen
+  - `student-miscellaneous-notes.spec.ts`: Sonstiges-Tab (Vermerke, Einwilligungen, Lernplattformen)
+  - `student-parents-test.spec.ts`: Erziehungsberechtigte (9 Felder: Erzieherart, Anrede, Titel, Name, Vorname, E-Mail-Adresse, Straße und Hausnummer, Staatsangehörigkeit, Wohnort)
 - **Automatischer Speicher**: SVWS speichert Änderungen automatisch (kein manueller Save-Button)
 - **Intelligentes Reset**: Original-Werte werden vor dem Test erfasst und nach dem Test wiederhergestellt
 - **Cross-Browser**: Tests laufen auf Chromium und Firefox für maximale Abdeckung
@@ -201,9 +221,74 @@ Die Test-Suite folgt einem **minimalen, fokussierten Ansatz**:
      ✅ Verkehrssprache (Combobox: "Fidschi")
 ```
 
+#### Sonstiges-Tab (Vermerke, Einwilligungen, Lernplattformen)
+```
+✅ Vermerke: Neuen Vermerk hinzufügen
+   ✅ Vermerk-Text (Textarea mit Zeitstempel)
+   ✅ Vermerk-Typ (Combobox: zufällige Auswahl aus Sportbefreiung, Laufbahn-Bemerkung, Corona-Bemerkung, etc.)
+   ✅ Automatische Löschung (Notes werden nach dem Test gelöscht)
+
+✅ Einwilligungen: Verwendung Foto
+   ✅ Abgefragt (Checkbox)
+   ✅ Zugestimmt (Checkbox)
+
+✅ Lernplattformen: Einwilligung Abgefragt und Nutzung
+   ✅ Logineo NRW (Abgefragt + Nutzung Checkboxes)
+   ✅ IServ (Abgefragt + Nutzung Checkboxes)
+   ✅ MNS Pro (Abgefragt + Nutzung Checkboxes)
+   ✅ Automatisches Zurücksetzen aller Checkboxes nach Test
+```
+
+#### Erziehungsberechtigte (Eltern/Guardians)
+```
+✅ Navigation zum Tab "Erziehungsberechtigte"
+✅ Auswahl des ersten Erziehungsberechtigten aus der Liste
+✅ Erzieherart (Combobox: "Testart" - Custom-Combobox mit Option-Liste)
+✅ Anrede (Textinput: "Testanrede")
+✅ Titel (Textinput: "Testtitel")
+✅ Name (Textinput: "Testname-{timestamp}")
+✅ Vorname (Textinput: "Testvorname-{timestamp}")
+✅ E-Mail-Adresse (Email Input: "Testmail-{timestamp}@example.com")
+✅ Straße und Hausnummer (Textinput: "Teststrasse-{timestamp}")
+✅ Staatsangehörigkeit (Combobox: "Australien" - mit komplexer Option-Liste)
+✅ Wohnort (Combobox: "42287 Wuppertal" - mit force-click für bestehende Werte)
+✅ Bemerkungen (Textarea: "Dies ist eine Testbemerkung für die automatisierten Tests.")
+✅ Automatisches Speichern (Auto-Save nach Feldänderungen)
+✅ Automatisches Zurücksetzen aller 10 Felder auf Original-Werte
+✅ Performance-Optimierung: fill() statt keyboard.type() für schnellere Testausführung
+✅ Robuste Combobox-Handhabung: force-click für Felder mit angezeigten Werten
+✅ Textarea-Unterstützung: Parent-Container-Filter für Textarea-Felder mit Tab-Taste zum Speichern
+```
+
 ### Bekannte Einschränkungen
 
-#### 2. Staatsangehörigkeit - Clearing bei initialem leeren Zustand
+#### 1. Telefonnummern-Persistierung (Backend-Issue)
+
+**Problem:**
+- Das "Weitere Telefonnummern" Modal erlaubt es, Telefonart, Telefonnummer, Bemerkung und Gesperrt-Status zu ändern
+- Das UI funktioniert korrekt (Modal öffnet, Eingaben werden akzeptiert, Modal schließt)
+- **Allerdings**: Die Backend-API speichert die Änderungen nicht persistent ab
+- Nach dem Speichern und Neuöffnen des Modals, sind die ursprünglichen Werte wiederhergestellt
+
+**Auswirkungen:**
+- Der Test läuft erfolgreich durch und lokalisiert korrekt die Telefonzeilen
+- Nach dem Klick auf "Speichern" zeigt die Verifikation, dass die Änderungen NICHT persistiert wurden
+- Das Feld bleibt mit dem ursprünglichen Wert gefüllt
+- Dies ist ein SVWS-Backend-Integration-Issue, nicht ein Automations-Problem
+
+**Workaround:**
+- Der Test dokumentiert dieses Backend-Issue klar in den Logs
+- Der afterEach-Hook versucht trotzdem, die Originalwerte zu speichern (als Failsafe)
+- Für Verifikation: Nutzen Sie `KEEP_TEST_DATA=true` um die Änderungen sichtbar zu lassen
+- **Entwickler-Note**: Überprüfen Sie die Backend-Implementierung der `/api/telefonnummern/save` oder ähnliches Endpoint
+
+**Test-Ausgabe bei Persistierungsfehler:**
+```
+⚠⚠ ISSUE: Phone changes NOT persisted! Expected "999-TEST-123" but got "01234-411753"
+NOTE: The "Weitere Telefonnummern" modal Speichern button may not be connected to the backend API.
+```
+
+#### 2. 2. Staatsangehörigkeit - Clearing bei initialem leeren Zustand
 
 Die Tests für das Feld "2. Staatsangehörigkeit" haben eine bekannte UI-Automation-Einschränkung:
 
@@ -419,6 +504,7 @@ Bereits implementierte Felder (26+):
 - [x] Kontaktdaten (Straße, Wohnort, Ortsteil, Telefon, Mobil/Fax, E-Mail privat, E-Mail schulisch)
 - [x] Religion (Konfession, Konfession aufs Zeugnis, Abmeldung/Wiederanmeldung vom Religionsunterricht)
 - [x] Migrationshintergrund (Checkbox, Zuzugsjahr, Geburtsland, Geburtsland Mutter/Vater, Verkehrssprache)
+- [x] Telefonnummern Modal (Telefonart, Telefonnummer, Bemerkung, Gesperrt-Status) - siehe Bekannte Einschränkungen
 
 Weitere mögliche Erweiterungen:
 - [ ] Zusätzliche Adressfelder

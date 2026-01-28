@@ -53,22 +53,39 @@ export async function resetTestData(page: any, originalValues: any = {}) {
     // Navigate to the student we just modified
     await page.goto('https://localhost:8443/#/svwse2e/1/schueler/', { waitUntil: 'load', timeout: 5000 }).catch(() => {});
     
-    // Look for any student with "Testname-" in the name
-    const testNamePattern = 'Testname-';
+    // Prefer the exact student we modified (by original Nachname) before falling back to Testname- pattern
     const rows = page.locator('[role="row"]');
     const count = await rows.count();
-    
+    const testNamePattern = 'Testname-';
     let foundTestStudent = false;
-    for (let i = 0; i < Math.min(count, 50); i++) {
-      const row = rows.nth(i);
-      const text = await row.textContent().catch(() => '');
-      
-      if (text && text.includes(testNamePattern)) {
-        console.log(`Found test student to reset at row ${i}`);
-        await row.click();
-        await page.waitForTimeout(500);
-        foundTestStudent = true;
-        break;
+
+    // Try to find by original Nachname first (handles fallback students like Briel/Boetius)
+    if (originalValues.nachname) {
+      for (let i = 0; i < Math.min(count, 50); i++) {
+        const row = rows.nth(i);
+        const text = await row.textContent().catch(() => '');
+        if (text && text.includes(String(originalValues.nachname))) {
+          console.log(`Found student ${originalValues.nachname} to reset at row ${i}`);
+          await row.click();
+          await page.waitForTimeout(500);
+          foundTestStudent = true;
+          break;
+        }
+      }
+    }
+
+    // Fallback: any Testname-* row
+    if (!foundTestStudent) {
+      for (let i = 0; i < Math.min(count, 50); i++) {
+        const row = rows.nth(i);
+        const text = await row.textContent().catch(() => '');
+        if (text && text.includes(testNamePattern)) {
+          console.log(`Found test student to reset at row ${i}`);
+          await row.click();
+          await page.waitForTimeout(500);
+          foundTestStudent = true;
+          break;
+        }
       }
     }
     
@@ -745,8 +762,170 @@ export async function resetTestData(page: any, originalValues: any = {}) {
           }
         }
         
+        // Restore Weitere Telefonnummern modal values
+        if (originalValues.hasOwnProperty('weitereTelefonNummer') || 
+            originalValues.hasOwnProperty('weitereTelefonArt') ||
+            originalValues.hasOwnProperty('weitereTelefonBemerkung') ||
+            originalValues.hasOwnProperty('weitereTelefonGesperrt')) {
+          
+          try {
+            // Find the "Weitere Telefonnummern" section
+            const weitereTelefonSection = page.getByText(/Weitere Telefonnummern/i).first();
+            
+            if (await weitereTelefonSection.isVisible({ timeout: 1000 })) {
+              const sectionContainer = weitereTelefonSection.locator('xpath=ancestor::*[self::div or self::section][1]');
+              const phoneEntries = sectionContainer.locator('button, a, li, [role="button"]').filter({ 
+                hasText: /\d{3,}|mobil|festnetz|privat|geschäftlich|test/i 
+              });
+              
+              const phoneCount = await phoneEntries.count();
+              
+              if (phoneCount > 0) {
+                const firstEntry = phoneEntries.first();
+                await firstEntry.click();
+                await page.waitForTimeout(500);
+                
+                const modal = page.locator('[role="dialog"], .modal, [class*="modal"]').first();
+                
+                if (await modal.isVisible({ timeout: 2000 })) {
+                  console.log('Restoring Weitere Telefonnummern values...');
+                  
+                  // Restore Telefonart
+                  if (originalValues.hasOwnProperty('weitereTelefonArt') && originalValues.weitereTelefonArt) {
+                    const telefonartField = modal.getByLabel(/Telefonart|phone.*type/i).first()
+                      .or(modal.locator('input[role="combobox"]').first());
+                    
+                    if (await telefonartField.isVisible({ timeout: 500 })) {
+                      await telefonartField.click();
+                      await page.waitForTimeout(300);
+                      
+                      const options = page.getByRole('option');
+                      const optCount = await options.count();
+                      let found = false;
+                      
+                      for (let j = 0; j < optCount; j++) {
+                        const opt = options.nth(j);
+                        const optText = await opt.textContent().catch(() => '');
+                        if (optText && optText.toLowerCase().includes(String(originalValues.weitereTelefonArt).toLowerCase())) {
+                          await opt.click();
+                          found = true;
+                          console.log(`✓ Restored Telefonart to "${originalValues.weitereTelefonArt}"`);
+                          break;
+                        }
+                      }
+                      
+                      if (!found) {
+                        console.log(`Could not find Telefonart option "${originalValues.weitereTelefonArt}"`);
+                      }
+                    }
+                  }
+                  
+                  // Restore Telefonnummer
+                  if (originalValues.hasOwnProperty('weitereTelefonNummer')) {
+                    const telefonnummerField = modal.getByLabel(/Telefonnummer|phone.*number/i).first()
+                      .or(modal.locator('input[type="text"]').filter({ hasText: /nummer/i }).first());
+                    
+                    if (await telefonnummerField.isVisible({ timeout: 500 })) {
+                      await telefonnummerField.clear();
+                      if (originalValues.weitereTelefonNummer) {
+                        await telefonnummerField.fill(originalValues.weitereTelefonNummer);
+                      }
+                      console.log(`✓ Restored Telefonnummer to "${originalValues.weitereTelefonNummer}"`);
+                    }
+                  }
+                  
+                  // Restore Bemerkung
+                  if (originalValues.hasOwnProperty('weitereTelefonBemerkung')) {
+                    const bemerkungField = modal.getByLabel(/Bemerkung|note|comment/i).first()
+                      .or(modal.locator('input[type="text"], textarea').filter({ hasText: /bemerkung/i }).first());
+                    
+                    if (await bemerkungField.isVisible({ timeout: 500 })) {
+                      await bemerkungField.clear();
+                      if (originalValues.weitereTelefonBemerkung) {
+                        await bemerkungField.fill(originalValues.weitereTelefonBemerkung);
+                      }
+                      console.log(`✓ Restored Bemerkung to "${originalValues.weitereTelefonBemerkung}"`);
+                    }
+                  }
+                  
+                  // Restore Gesperrt checkbox
+                  if (originalValues.hasOwnProperty('weitereTelefonGesperrt')) {
+                    const gesperrtCheckbox = modal.getByLabel(/gesperrt|blocked|locked/i).first()
+                      .or(modal.locator('input[type="checkbox"]').first());
+                    
+                    if (await gesperrtCheckbox.isVisible({ timeout: 500 })) {
+                      const isCurrentlyChecked = await gesperrtCheckbox.isChecked();
+                      const shouldBeChecked = originalValues.weitereTelefonGesperrt || false;
+                      
+                      if (isCurrentlyChecked !== shouldBeChecked) {
+                        await gesperrtCheckbox.click();
+                        console.log(`✓ Restored Gesperrt to ${shouldBeChecked}`);
+                      } else {
+                        console.log(`Gesperrt already ${shouldBeChecked} - no change needed`);
+                      }
+                    }
+                  }
+                  
+                  // Click Speichern button
+                  const speichernButton = modal.getByRole('button', { name: /Speichern|Save/i }).first()
+                    .or(modal.locator('button').filter({ hasText: /Speichern|Save/i }).first());
+                  
+                  if (await speichernButton.isVisible({ timeout: 1000 })) {
+                    await speichernButton.click();
+                    console.log('✓ Saved Weitere Telefonnummern changes');
+                    await page.waitForTimeout(1000);
+                  }
+                }
+              } else {
+                console.log('No phone entries found to restore');
+              }
+            } else {
+              console.log('Weitere Telefonnummern section not visible for restore');
+            }
+          } catch (err) {
+            console.log(`Error restoring Weitere Telefonnummern: ${err}`);
+          }
+        }
+        
         // Auto-save should trigger, wait a bit
-        await page.waitForTimeout(1000);
+        // Explicit save (UI sometimes stays in edit mode without autosaving)
+        const saveCandidates = [
+          page.getByRole('button', { name: /speichern|save|ok/i }).first(),
+          page.locator('button').filter({ hasText: /speichern|save|ok/i }).first(),
+          page.locator('button[type="submit"]').first(),
+        ];
+        let saved = false;
+        for (const candidate of saveCandidates) {
+          if (await candidate.isVisible({ timeout: 1200 }).catch(() => false)) {
+            console.log('Save button found during reset, clicking...');
+            await candidate.click({ trial: false }).catch(() => {});
+            await page.waitForTimeout(1200);
+            saved = true;
+            break;
+          }
+        }
+        if (!saved) {
+          console.log('Save button not found during reset - relying on autosave');
+          // Try Ctrl+S as a fallback to trigger form save shortcuts
+          await page.keyboard.press('Control+S').catch(() => {});
+          await page.waitForTimeout(800);
+        }
+
+        // Verify Nachname restored after save by re-reading field (best-effort)
+        try {
+          const nachnameFieldVerify = page.getByLabel(/nachname|lastname/i).first();
+          if (await nachnameFieldVerify.isVisible({ timeout: 800 })) {
+            const currentNachname = await nachnameFieldVerify.inputValue();
+            if (String(currentNachname) !== String(originalValues.nachname || '')) {
+              console.log(`⚠ Nachname verification mismatch after reset: now "${currentNachname}", expected "${originalValues.nachname}"`);
+            } else {
+              console.log('✓ Nachname verified after reset');
+            }
+          }
+        } catch {}
+
+        // Allow any debounced autosave to finish
+        await page.waitForTimeout(800);
         console.log('Test data reset completed successfully');
     } else {
       console.log('No test students found to reset');

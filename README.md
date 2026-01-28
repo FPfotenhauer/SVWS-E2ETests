@@ -22,6 +22,7 @@ Dieses Repository enthält eine umfassende E2E-Test-Suite für den SVWS (Schulve
 - ✅ **Abhängige Felder**: Tests für bedingt aktivierte Felder (z.B. Migrationshintergrund-abhängige Felder)
 - ✅ **Kataloge - Abteilungen**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit umfassender Feldabdeckung (Name, Raum, Email, Durchwahl, Lehrer, Checkboxen)
 - ✅ **Kataloge - Betriebe**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit kompletter Geschäftsinformation (Name, Namensergänzung, Betriebsart, Branche, Adresse, Kontaktdaten, Checkboxen)
+- ✅ **Kataloge - Betriebsarten**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit Betriebsart-spezifischen Feldern und Checkboxen
 - 🔄 **Schüler erstellen**: Geplant
 - 🔄 **Schüler löschen**: Geplant
 

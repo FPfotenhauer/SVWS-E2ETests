@@ -120,6 +120,6 @@ test.describe('Kataloge - Betriebe', () => {
     await page.locator('button:has-text("Löschen")').last().click();
 
     // Wait for observation
-    await page.waitForTimeout(5000);
+    await page.waitForTimeout(0);
   });
 });

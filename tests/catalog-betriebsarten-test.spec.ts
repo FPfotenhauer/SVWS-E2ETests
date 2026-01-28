@@ -21,7 +21,7 @@ test.describe('Kataloge - Betriebsarten', () => {
     await page.locator('a.sidebar--menu-item[title="Betriebsarten"]').click();
 
     // Verify we're on the Betriebsarten page by checking for a specific element
-    await page.waitForSelector('text=Betriebsarten', { timeout: 5000 });
+    await page.waitForSelector('text=Betriebsarten', { timeout: 100 });
 
     // Click the '+' button to add a new Betriebsart
     await page.locator('button.button--icon:has(.icon.i-ri-add-line)').first().click();
@@ -45,6 +45,6 @@ test.describe('Kataloge - Betriebsarten', () => {
     await page.locator('button:has-text("Löschen")').last().click();
 
     // Wait for observation
-    await page.waitForTimeout(5000);
+    await page.waitForTimeout(0);
   });
 });

@@ -1,8 +1,9 @@
 node_modules/
-/test-results/
+test-results/
 /playwright-report/
 /debug-images/
 /database/
 *.log
 .DS_Store
 ai-information.md
+.venv/

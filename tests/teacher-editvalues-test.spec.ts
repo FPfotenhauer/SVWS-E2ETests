@@ -128,6 +128,111 @@ test.describe('Lehrkräfte - Edit Values', () => {
       await schulEmailInput.press('Tab');
     }
 
+    // Uncheck the "Ist sichtbar" checkbox
+    const istSichtbarCheckbox = page.getByLabel('Ist sichtbar');
+    if (await istSichtbarCheckbox.isVisible({ timeout: 500 })) {
+      await istSichtbarCheckbox.uncheck();
+    }
+
+    // Uncheck the "Ist Relevant für Statistik" checkbox
+    const istRelevantCheckbox = page.getByLabel('Ist Relevant für Statistik');
+    if (await istRelevantCheckbox.isVisible({ timeout: 500 })) {
+      await istRelevantCheckbox.uncheck();
+    }
+
+    // Go to the "Personaldaten" tab
+    const personaldatenTab = page.getByRole('button', { name: 'Personaldaten' });
+    if (await personaldatenTab.isVisible({ timeout: 1000 })) {
+      await personaldatenTab.click();
+      await page.waitForTimeout(1000); // Wait for tab content to load
+    }
+
+    // Fill in Identnummer field
+    const identnummerInput = page.locator('label:has-text("Identnummer")').locator('input.text-input--control');
+    if (await identnummerInput.isVisible({ timeout: 500 })) {
+      await identnummerInput.fill('3112705');
+      await identnummerInput.press('Tab');
+    }
+
+    // Fill in Seriennummer field
+    const seriennummerInput = page.locator('label:has-text("Seriennummer")').locator('input.text-input--control');
+    if (await seriennummerInput.isVisible({ timeout: 500 })) {
+      await seriennummerInput.fill('1234X');
+      await seriennummerInput.press('Tab');
+    }
+
+    // Fill in Vergütungsschlüssen field
+    const verguetungsschluessenInput = page.locator('label:has-text("Vergütungsschlüssen")').locator('input.text-input--control');
+    if (await verguetungsschluessenInput.isVisible({ timeout: 500 })) {
+      await verguetungsschluessenInput.fill('AB');
+      await verguetungsschluessenInput.press('Tab');
+    }
+
+    // Fill in PA-Nummer field
+    const paNummerInput = page.locator('label:has-text("PA-Nummer")').locator('input.text-input--control');
+    if (await paNummerInput.isVisible({ timeout: 500 })) {
+      await paNummerInput.fill('PA123456789');
+      await paNummerInput.press('Tab');
+    }
+
+    // Fill in LBV-Personalnummer field
+    const lbvPersonalnummerInput = page.locator('label:has-text("LBV-Personalnummer")').locator('input.text-input--control');
+    if (await lbvPersonalnummerInput.isVisible({ timeout: 500 })) {
+      await lbvPersonalnummerInput.fill('LBV123456');
+      await lbvPersonalnummerInput.press('Tab');
+    }
+
+    // Fill in Zugangsdatum field
+    const zugangsdatumInput = page.getByLabel('Zugangsdatum');
+    if (await zugangsdatumInput.isVisible({ timeout: 500 })) {
+      await zugangsdatumInput.fill('2025-07-31');
+      await zugangsdatumInput.press('Tab');
+    }
+
+    // Fill in Abgangsdatum field
+    const abgangsdatumInput = page.getByLabel('Abgangsdatum');
+    if (await abgangsdatumInput.isVisible({ timeout: 500 })) {
+      await abgangsdatumInput.fill('2026-07-31');
+      await abgangsdatumInput.press('Tab');
+    }
+
+    // Select Rechtsverhältnis from the combobox
+    const rechtsverhaeltnisCombo = page.getByRole('combobox', { name: 'Rechtsverhältnis' });
+    await rechtsverhaeltnisCombo.click();
+    await page.waitForTimeout(500);
+    await page.keyboard.type('unentgeltlich');
+    await page.waitForTimeout(500);
+    await page.keyboard.press('Enter');
+
+    // Select Beschäftigungsart from the combobox
+    const beschaeftigungsartCombo = page.getByRole('combobox', { name: 'Beschäftigungsart' });
+    await beschaeftigungsartCombo.click();
+    await page.waitForTimeout(500);
+    await page.keyboard.type('studierende');
+    await page.waitForTimeout(500);
+    await page.keyboard.press('Enter');
+
+    // Fill in Pflichtstundensoll field
+    const pflichtstundensollInput = page.getByLabel('Pflichtstundensoll');
+    await pflichtstundensollInput.fill('99');
+    await pflichtstundensollInput.press('Tab');
+
+    // Select Einsatzstatus from the combobox
+    const einsatzstatusCombo = page.getByRole('combobox', { name: 'Einsatzstatus' });
+    await einsatzstatusCombo.click();
+    await page.waitForTimeout(500);
+    await page.keyboard.type('nicht Stammschule');
+    await page.waitForTimeout(500);
+    await page.keyboard.press('Enter');
+
+    // Select Stammschule from the combobox
+    const stammschuleCombo = page.getByRole('combobox', { name: 'Stammschule' });
+    await stammschuleCombo.click();
+    await page.waitForTimeout(500);
+    await page.keyboard.type('Eigene Schule');
+    await page.waitForTimeout(500);
+    await page.keyboard.press('Enter');
+
     // Optional: Verify the teacher was added
     await page.waitForTimeout(5000);
   });

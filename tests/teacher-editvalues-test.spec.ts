@@ -234,6 +234,6 @@ test.describe('Lehrkräfte - Edit Values', () => {
     await page.keyboard.press('Enter');
 
     // Optional: Verify the teacher was added
-    await page.waitForTimeout(5000);
+    await page.waitForTimeout(0);
   });
 });

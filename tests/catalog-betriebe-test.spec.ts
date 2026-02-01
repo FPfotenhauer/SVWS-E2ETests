@@ -26,13 +26,17 @@ test.describe('Kataloge - Betriebe', () => {
     // Click the '+' button to add a new Betrieb
     await page.locator('button.button--icon:has(.icon.i-ri-add-line)').first().click();
 
+    // Wait for observation
+    await page.waitForTimeout(1000);
+
     // Fill in the Betrieb name
-    const nameInput = page.locator('input.text-input--control[type="text"][required]').first();
+    const nameInput = page.locator('label:has-text("Name (zwischen 1 und 50 Zeichen)")').locator('input.text-input--control');
+    await nameInput.waitFor({ state: 'visible' });
     await nameInput.fill('Testbetrieb');
     await nameInput.press('Tab');
 
     // Fill in the Namensergänzung field
-    const namenserganzungInput = page.locator('label:has-text("Namensergänzung")').locator('input.text-input--control');
+    const namenserganzungInput = page.locator('label:has-text("Namensergänzung (max. 50 Zeichen)")').locator('input.text-input--control');
     await namenserganzungInput.waitFor({ state: 'visible' });
     await namenserganzungInput.fill('Testname');
     await namenserganzungInput.press('Tab');
@@ -40,6 +44,7 @@ test.describe('Kataloge - Betriebe', () => {
     // Select Betriebsart from the combobox
     const betriebsartCombo = page.getByRole('combobox', { name: 'Betriebsart' });
     await betriebsartCombo.click();
+
     // Select the first available option
     await page.locator('[role="option"]').first().click();
     await betriebsartCombo.press('Tab');
@@ -57,14 +62,11 @@ test.describe('Kataloge - Betriebe', () => {
     await bemerkungenTextarea.press('Tab');
 
     // Check all enabled checkboxes
-    const checkboxes = page.locator('input[type="checkbox"]');
-    const checkboxCount = await checkboxes.count();
-    for (let i = 0; i < checkboxCount; i++) {
-      const checkbox = checkboxes.nth(i);
-      if (await checkbox.isEnabled()) {
-        await checkbox.check();
-      }
-    }
+    await page.getByLabel('Ausbildungsbetrieb').check();
+    await page.getByLabel('Maßnahmenträger').check();
+    await page.getByLabel('Belehrung nach ISG notwendig').check();
+    await page.getByLabel('Bietet Praktikumsplätze').check();
+    await page.getByLabel('Erweitertes Führungszeugnis notwendig').check();
 
     // Fill in the Straße field
     const strasseInput = page.locator('label:has-text("Straße")').locator('input.text-input--control');
@@ -110,7 +112,7 @@ test.describe('Kataloge - Betriebe', () => {
     await page.locator('button:has-text("Speichern")').click();
 
     // Go to the checkbox after saving
-    const postSaveCheckbox = page.locator('xpath=/html/body/div/div/div[3]/div[2]/div/div[3]/div/div[2]/div[2]/div/div[1]/input');
+    const postSaveCheckbox = page.locator('xpath=/html/body/div/div/div[3]/div[2]/div/div[3]/div/div[2]/div[2]/div[2]/div[1]/input');
     await postSaveCheckbox.check();
 
     // Click the "Löschen" button to delete

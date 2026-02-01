@@ -27,7 +27,7 @@ test.describe('Kataloge - Einwilligungsarten', () => {
     await page.locator('button.button--icon:has(.icon.i-ri-add-line)').first().click();
 
     // Fill in the Einwilligungsart Bezeichnung
-    const bezeichnungInput = page.locator('input.text-input--control[type="text"][required]').first();
+    const bezeichnungInput = page.locator('label:has-text("Bezeichnung")').locator('input.text-input--control');
     await bezeichnungInput.fill('Testeinwilligungsart');
     await bezeichnungInput.press('Tab');
 

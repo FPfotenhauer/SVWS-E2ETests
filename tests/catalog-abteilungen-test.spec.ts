@@ -34,7 +34,7 @@ test.describe('Kataloge - Abteilungen', () => {
     await raumInput.press('Tab');
 
     // Fill in the Email field by finding the input near the label 'E-Mail-Adresse'
-    const emailInput = page.locator('label:has-text("Email")').locator('input.text-input--control');
+    const emailInput = page.locator('label:has-text("E-Mail-Adresse")').locator('input.text-input--control');
     await emailInput.waitFor({ state: 'visible' });
     await emailInput.fill('abteilung@a.example.com');
     await emailInput.press('Tab');

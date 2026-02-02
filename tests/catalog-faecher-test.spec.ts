@@ -76,9 +76,6 @@ test.describe('Kataloge - Fächer', () => {
     // Click the "Speichern" button to save
     await page.locator('button:has-text("Speichern")').click();
 
-    // Click the "Speichern" button to save
-    await page.locator('button:has-text("Speichern")').click();
-
     // Wait for observation
     await page.waitForTimeout(1000);
 

@@ -31,6 +31,7 @@ Dieses Repository enthält eine umfassende E2E-Test-Suite für den SVWS (Schulve
 - ✅ **Kataloge - Fahrschülerarten**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit Fahrschülerart-spezifischen Feldern
 - ✅ **Kataloge - Floskelgruppen**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit Floskelgruppen-spezifischen Feldern
 - ✅ **Kataloge - Floskeln**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit Floskel-spezifischen Feldern und Floskelgruppen-Auswahl
+- ✅ **Kataloge - Förderschwerpunkte**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit Förderschwerpunkt-spezifischen Feldern und ASD-Kürzel-Auswahl
 - ✅ **Lehrkräfte - Lehrer hinzufügen**: Vollständiger Lebenszyklus für das Hinzufügen neuer Lehrkräfte mit umfassender Feldabdeckung
 - ✅ **Lehrkräfte - Lehrer bearbeiten**: Bearbeitung von Lehrer-Daten mit automatischem Speichern und Feldvalidierung
 - 🔄 **Schüler erstellen**: Geplant
@@ -157,6 +158,7 @@ npx playwright test tests/catalog-abteilungen-test.spec.ts
 npx playwright test tests/catalog-betriebe-test.spec.ts
 npx playwright test tests/catalog-faecher-test.spec.ts
 npx playwright test tests/catalog-floskeln-test.spec.ts
+npx playwright test tests/catalog-foerderschwerpunkte-test.spec.ts
 
 # Nur in Chromium
 npx playwright test --project=chromium
@@ -188,7 +190,8 @@ SVWS-E2ETests/
 │   ├── catalog-faecher-test.spec.ts   # Kataloge - Fächer Tests
 │   ├── catalog-fahrschuelerarten-test.spec.ts # Kataloge - Fahrschülerarten Tests
 │   ├── catalog-floskelgruppen-test.spec.ts # Kataloge - Floskelgruppen Tests
-│   └── catalog-floskeln-test.spec.ts # Kataloge - Floskeln Tests
+│   ├── catalog-floskeln-test.spec.ts # Kataloge - Floskeln Tests
+│   └── catalog-foerderschwerpunkte-test.spec.ts # Kataloge - Förderschwerpunkte Tests
 ├── playwright.config.ts               # Playwright-Konfiguration (Chromium + Firefox)
 ├── tsconfig.json                      # TypeScript-Konfiguration
 ├── package.json                       # Abhängigkeiten und Skripte

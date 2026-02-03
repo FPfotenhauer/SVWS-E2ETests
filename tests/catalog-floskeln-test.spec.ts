@@ -72,10 +72,10 @@ test.describe('Kataloge - Floskeln', () => {
     await postSaveCheckbox.check();
 
     // Click the "Löschen" button to delete
-    // await page.locator('button:has-text("Löschen")').first().click();
+    await page.locator('button:has-text("Löschen")').first().click();
 
     // Click the confirmation "Löschen" button
-    // await page.locator('button:has-text("Löschen")').last().click();
+    await page.locator('button:has-text("Löschen")').last().click();
 
     // Wait for observation
     await page.waitForTimeout(0);

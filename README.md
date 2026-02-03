@@ -16,6 +16,7 @@ Dieses Repository enthält eine umfassende E2E-Test-Suite für den SVWS (Schulve
 - ✅ **Telefonnummern bearbeiten**: "Weitere Telefonnummern" Modal mit Feldänderungen (Telefonart, Telefonnummer, Bemerkung, Gesperrt-Status)
 - ✅ **Sonstiges-Tab (Vermerke, Einwilligungen, Lernplattformen)**: Erstellen von Vermerken, Auswahl von Vermerk-Typen, Verwaltung von Foto-Einwilligungen, Aktivierung von Lernplattform-Zustimmungen
 - ✅ **Erziehungsberechtigte**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Löschen). Tests für Änderungen an Bestandsdaten sowie Neuanlage via Modal mit komplexer Validierung (Combobox-Abhängigkeiten wie Wohnort/Ortsteil)
+- ✅ **Schüler - Eltern hinzufügen**: Vollständiger Lebenszyklus für das Hinzufügen neuer Erziehungsberechtigter zu Schülern
 - ✅ **Automatisches Cleanup**: Testdaten werden nach Tests automatisch zurückgesetzt (optional behalten mit KEEP_TEST_DATA=true)
 - ✅ **Cross-Browser Testing**: Tests laufen auf Chromium und Firefox
 - ✅ **Feldabdeckung**: Umfassende Tests für Text-, Combobox-, Date-, Checkbox- und Modal-Felder
@@ -23,10 +24,13 @@ Dieses Repository enthält eine umfassende E2E-Test-Suite für den SVWS (Schulve
 - ✅ **Kataloge - Abteilungen**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit umfassender Feldabdeckung (Name, Raum, Email, Durchwahl, Lehrer, Checkboxen)
 - ✅ **Kataloge - Betriebe**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit kompletter Geschäftsinformation (Name, Namensergänzung, Betriebsart, Branche, Adresse, Kontaktdaten, Checkboxen)
 - ✅ **Kataloge - Betriebsarten**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit Betriebsart-spezifischen Feldern und Checkboxen
-- ✅ **Kataloge - Fächer**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit Fach-spezifischen Feldern und ASD-Kürzel-Auswahl
 - ✅ **Kataloge - Einwilligungsarten**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit Einwilligungsart-spezifischen Feldern
 - ✅ **Kataloge - Entlassgründe**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit Entlassgrund-spezifischen Feldern
 - ✅ **Kataloge - Erzieherarten**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit Erzieherart-spezifischen Feldern
+- ✅ **Kataloge - Fächer**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit Fach-spezifischen Feldern und ASD-Kürzel-Auswahl
+- ✅ **Kataloge - Fahrschülerarten**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit Fahrschülerart-spezifischen Feldern
+- ✅ **Kataloge - Floskelgruppen**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit Floskelgruppen-spezifischen Feldern
+- ✅ **Kataloge - Floskeln**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit Floskel-spezifischen Feldern und Floskelgruppen-Auswahl
 - ✅ **Lehrkräfte - Lehrer hinzufügen**: Vollständiger Lebenszyklus für das Hinzufügen neuer Lehrkräfte mit umfassender Feldabdeckung
 - ✅ **Lehrkräfte - Lehrer bearbeiten**: Bearbeitung von Lehrer-Daten mit automatischem Speichern und Feldvalidierung
 - 🔄 **Schüler erstellen**: Geplant
@@ -139,6 +143,21 @@ npx playwright test tests/student-miscellaneous-notes.spec.ts
 # Nur Erziehungsberechtigte-Tests (Eltern/Erziehungsberechtigte)
 npx playwright test tests/student-parents-test.spec.ts
 
+# Nur Schüler-Eltern hinzufügen Tests
+npx playwright test tests/student-addparent-test.spec.ts
+
+# Nur Lehrkräfte-Tests
+npx playwright test tests/teacher-addteacher-test.spec.ts tests/teacher-editvalues-test.spec.ts
+
+# Nur Katalog-Tests (alle)
+npx playwright test tests/catalog-*.spec.ts
+
+# Spezifische Katalog-Tests
+npx playwright test tests/catalog-abteilungen-test.spec.ts
+npx playwright test tests/catalog-betriebe-test.spec.ts
+npx playwright test tests/catalog-faecher-test.spec.ts
+npx playwright test tests/catalog-floskeln-test.spec.ts
+
 # Nur in Chromium
 npx playwright test --project=chromium
 
@@ -156,7 +175,20 @@ SVWS-E2ETests/
 │   ├── student-editvalues.spec.ts     # Schüler-Bearbeitungs-Tests (26+ Felder)
 │   ├── student-phone-test.spec.ts     # Telefonnummern-Modal Tests
 │   ├── student-miscellaneous-notes.spec.ts  # Sonstiges-Tab Tests (Vermerke, Einwilligungen, Lernplattformen)
-│   └── student-parents-test.spec.ts   # Erziehungsberechtigte-Tests (Eltern/Guardians)
+│   ├── student-parents-test.spec.ts   # Erziehungsberechtigte-Tests (Eltern/Guardians)
+│   ├── student-addparent-test.spec.ts # Schüler-Eltern hinzufügen Tests
+│   ├── teacher-addteacher-test.spec.ts # Lehrkräfte hinzufügen Tests
+│   ├── teacher-editvalues-test.spec.ts # Lehrkräfte bearbeiten Tests
+│   ├── catalog-abteilungen-test.spec.ts # Kataloge - Abteilungen Tests
+│   ├── catalog-betriebe-test.spec.ts  # Kataloge - Betriebe Tests
+│   ├── catalog-betriebsarten-test.spec.ts # Kataloge - Betriebsarten Tests
+│   ├── catalog-einwilligungsarten-test.spec.ts # Kataloge - Einwilligungsarten Tests
+│   ├── catalog-entlassgruende-test.spec.ts # Kataloge - Entlassgründe Tests
+│   ├── catalog-erzieherarten-test.spec.ts # Kataloge - Erzieherarten Tests
+│   ├── catalog-faecher-test.spec.ts   # Kataloge - Fächer Tests
+│   ├── catalog-fahrschuelerarten-test.spec.ts # Kataloge - Fahrschülerarten Tests
+│   ├── catalog-floskelgruppen-test.spec.ts # Kataloge - Floskelgruppen Tests
+│   └── catalog-floskeln-test.spec.ts # Kataloge - Floskeln Tests
 ├── playwright.config.ts               # Playwright-Konfiguration (Chromium + Firefox)
 ├── tsconfig.json                      # TypeScript-Konfiguration
 ├── package.json                       # Abhängigkeiten und Skripte

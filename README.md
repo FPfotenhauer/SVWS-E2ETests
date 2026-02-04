@@ -32,6 +32,7 @@ Dieses Repository enthält eine umfassende E2E-Test-Suite für den SVWS (Schulve
 - ✅ **Kataloge - Floskelgruppen**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit Floskelgruppen-spezifischen Feldern
 - ✅ **Kataloge - Floskeln**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit Floskel-spezifischen Feldern und Floskelgruppen-Auswahl
 - ✅ **Kataloge - Förderschwerpunkte**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit Förderschwerpunkt-spezifischen Feldern und ASD-Kürzel-Auswahl
+- ✅ **Kataloge - Haltestellen**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit Haltestellen-spezifischen Feldern (Bezeichnung, Sortierung)
 - ✅ **Lehrkräfte - Lehrer hinzufügen**: Vollständiger Lebenszyklus für das Hinzufügen neuer Lehrkräfte mit umfassender Feldabdeckung
 - ✅ **Lehrkräfte - Lehrer bearbeiten**: Bearbeitung von Lehrer-Daten mit automatischem Speichern und Feldvalidierung
 - 🔄 **Schüler erstellen**: Geplant

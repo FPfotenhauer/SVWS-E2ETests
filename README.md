@@ -143,7 +143,7 @@ npx playwright test tests/student-phone-test.spec.ts
 
 # Nur Sonstiges-Tab-Tests (Vermerke, Einwilligungen, Lernplattformen)
 npx playwright test tests/student-miscellaneous-notes.spec.ts
-
+html/body/div/div/div[3]/div[2]/div/div[3]/div/div[2]/div[2]/div[5]/div[1]/input
 # Nur Erziehungsberechtigte-Tests (Eltern/Erziehungsberechtigte)
 npx playwright test tests/student-parents-test.spec.ts
 

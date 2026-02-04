@@ -5,7 +5,7 @@ import { exit } from 'process';
 // Test for Kataloge > Fahrschülerarten
 
 test.describe('Kataloge - Fahrschülerarten', () => {
-  test('should login, navigate to Betriebe, and add data', async ({ page }) => {
+  test('should login, navigate to Fahrschülerarten, and add data', async ({ page }) => {
     // Login using shared helper (now points to correct port)
     await loginAsAdmin(page);
 

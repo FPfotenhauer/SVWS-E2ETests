@@ -5,7 +5,7 @@ import { exit } from 'process';
 // Test for Kataloge > Fächer
 
 test.describe('Kataloge - Fächer', () => {
-  test('should login, navigate to Betriebe, and add data', async ({ page }) => {
+  test('should login, navigate to Fächer, and add data', async ({ page }) => {
     // Login using shared helper (now points to correct port)
     await loginAsAdmin(page);
 

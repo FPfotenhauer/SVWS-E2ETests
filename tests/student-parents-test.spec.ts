@@ -394,10 +394,10 @@ test.describe('Student parents/legal guardians', () => {
     }
 
     // Find and modify Vorname field (first name of the parent)
-    console.log('Looking for Vorname field...');
-    const allVornameLabels = page.locator('span').filter({ hasText: /^Vorname$/ });
+    console.log('Looking for Rufname field...');
+    const allVornameLabels = page.locator('span').filter({ hasText: /^Rufname$/ });
     const vornameLabelCount = await allVornameLabels.count();
-    console.log(`Found ${vornameLabelCount} labels with text "Vorname"`);
+    console.log(`Found ${vornameLabelCount} labels with text "Rufname"`);
     
     let vornameInput = null;
     let vornameLabel = null;

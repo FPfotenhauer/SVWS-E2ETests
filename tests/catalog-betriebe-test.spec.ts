@@ -112,7 +112,7 @@ test.describe('Kataloge - Betriebe', () => {
     await page.locator('button:has-text("Speichern")').click();
 
     // Go to the checkbox after saving
-    const postSaveCheckbox = page.locator('xpath=/html/body/div/div/div[3]/div[2]/div/div[3]/div/div[2]/div[2]/div[2]/div[1]/input');
+    const postSaveCheckbox = page.locator('xpath=/html/body/div/div/div[3]/div[2]/div/div[3]/div/div[2]/div[2]/div/div[1]/input');
     await postSaveCheckbox.check();
 
     // Click the "Löschen" button to delete

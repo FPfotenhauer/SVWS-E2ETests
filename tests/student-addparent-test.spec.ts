@@ -195,7 +195,7 @@ test.describe('Add Parent Test', () => {
 
         // Fill Name fields
         await modal.getByLabel(/nachname/i).first().fill(testParent.nachname);
-        await modal.getByLabel(/vorname/i).first().fill(testParent.vorname);
+        await modal.getByLabel(/rufname/i).first().fill(testParent.vorname);
 
         // Fill E-Mail
         await modal.getByLabel(/e-mail adresse/i).fill(testParent.email);

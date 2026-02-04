@@ -36,6 +36,7 @@ Dieses Repository enthält eine umfassende E2E-Test-Suite für den SVWS (Schulve
 - ✅ **Kataloge - Jahrgänge**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit Jahrgänge-spezifischen Feldern
 - ✅ **Kataloge - Kindergärten**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit Kindergärten-spezifischen Feldern
 - ✅ **Kataloge - Konfessionen**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit Konfessionen-spezifischen Feldern
+- ✅ **Kataloge - Lernplattformen**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit Lernplattformen-spezifischen Feldern
 - ✅ **Lehrkräfte - Lehrer hinzufügen**: Vollständiger Lebenszyklus für das Hinzufügen neuer Lehrkräfte mit umfassender Feldabdeckung
 - ✅ **Lehrkräfte - Lehrer bearbeiten**: Bearbeitung von Lehrer-Daten mit automatischem Speichern und Feldvalidierung
 - 🔄 **Schüler erstellen**: Geplant

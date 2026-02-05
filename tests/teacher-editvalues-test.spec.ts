@@ -68,7 +68,7 @@ test.describe('Lehrkräfte - Edit Values', () => {
     await staatsangehoerigkeitCombo.press('Tab');
 
     // Fill in Akademischer Grad field
-    const akademischerGradInput = page.locator('label:has-text("Akadademischer Grad")').locator('input.text-input--control');
+    const akademischerGradInput = page.locator('label:has-text("Akademischer Grad")').locator('input.text-input--control');
     await akademischerGradInput.fill('Prof. Dr');
     await akademischerGradInput.press('Tab');
 
@@ -162,9 +162,9 @@ test.describe('Lehrkräfte - Edit Values', () => {
     }
 
     // Fill in Vergütungsschlüssen field
-    const verguetungsschluessenInput = page.locator('label:has-text("Vergütungsschlüssen")').locator('input.text-input--control');
+    const verguetungsschluessenInput = page.locator('label:has-text("Vergütungsschlüssel")').locator('input.text-input--control');
     if (await verguetungsschluessenInput.isVisible({ timeout: 500 })) {
-      await verguetungsschluessenInput.fill('AB');
+      await verguetungsschluessenInput.fill('A');
       await verguetungsschluessenInput.press('Tab');
     }
 

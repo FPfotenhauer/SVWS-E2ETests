@@ -2,6 +2,8 @@ import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from './fixtures';
 import { exit } from 'process';
 
+const keepTestData = process.env.KEEP_TEST_DATA === 'true' || process.env.KEEP_TEST_DATA === '1';
+
 // Test for Kataloge > Lernplattformen
 
 test.describe('Kataloge - Lernplattformen', () => {
@@ -28,7 +30,7 @@ test.describe('Kataloge - Lernplattformen', () => {
     await page.locator('button.button--icon:has(.icon.i-ri-add-line)').first().click();
 
     // Wait for observation
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(200);
 
     // Fill in the Bezeichnung field
     const bezeichnungInput = page.getByLabel('Bezeichnung (zwischen 1 und 255 Zeichen)');
@@ -40,7 +42,7 @@ test.describe('Kataloge - Lernplattformen', () => {
     await page.locator('button:has-text("Speichern")').click();
 
     // Wait for observation
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(200);
 
     // Fill in the Bezeichnung field
     const bezeichnungNeuInput = page.getByLabel('Bezeichnung (zwischen 1 und 255 Zeichen)');
@@ -48,21 +50,24 @@ test.describe('Kataloge - Lernplattformen', () => {
     await bezeichnungNeuInput.fill('Z Lernplattform Test Neu');
     await bezeichnungNeuInput.press('Tab');
 
-    // Go to the checkbox after saving
-    const postSaveCheckbox = page.locator('xpath=/html/body/div/div/div[3]/div[2]/div/div[3]/div/div[2]/div[2]/div[4]/div[1]/input');
-    await postSaveCheckbox.check();
+    if (!keepTestData) {
 
-    // Click the "Löschen" button to delete
-    await page.locator('button:has-text("Löschen")').first().click();
+        // Go to the checkbox after saving
+        const postSaveCheckbox = page.locator('xpath=/html/body/div/div/div[3]/div[2]/div/div[3]/div/div[2]/div[2]/div[4]/div[1]/input');
+        await postSaveCheckbox.check();
 
-    // Click the confirmation "Löschen" button
-    await page.locator('button:has-text("Löschen")').last().click();
+        // Click the "Löschen" button to delete
+        await page.locator('button:has-text("Löschen")').first().click();
 
-    // Wait for observation
-    await page.waitForTimeout(500);
+        // Click the confirmation "Löschen" button
+        await page.locator('button:has-text("Löschen")').last().click();
 
-    // Click the "Löschen" button to delete
-    await page.locator('button:has-text("Ja")').first().click();
+        // Wait for observation
+        await page.waitForTimeout(500);
+
+        // Click the "Löschen" button to delete
+        await page.locator('button:has-text("Ja")').first().click();
+    }
 
     // Wait for observation
     await page.waitForTimeout(0);

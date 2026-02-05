@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from './fixtures';
 
+const keepTestData = process.env.KEEP_TEST_DATA === 'true' || process.env.KEEP_TEST_DATA === '1';
+
 // Test for Kataloge > Betriebsarten
 
 test.describe('Kataloge - Betriebsarten', () => {
@@ -34,15 +36,18 @@ test.describe('Kataloge - Betriebsarten', () => {
     // Click the "Speichern" button to save
     await page.locator('button:has-text("Speichern")').click();
 
-    // Go to the checkbox after saving
-    const postSaveCheckbox = page.locator('xpath=/html/body/div/div/div[3]/div[2]/div/div[3]/div/div[2]/div[2]/div[3]/div[1]/input');
-    await postSaveCheckbox.check();
+    if (!keepTestData) {
 
-    // Click the "Löschen" button to delete
-    await page.locator('button:has-text("Löschen")').first().click();
+        // Go to the checkbox after saving
+        const postSaveCheckbox = page.locator('xpath=/html/body/div/div/div[3]/div[2]/div/div[3]/div/div[2]/div[2]/div[3]/div[1]/input');
+        await postSaveCheckbox.check();
 
-    // Click the confirmation "Löschen" button
-    await page.locator('button:has-text("Löschen")').last().click();
+        // Click the "Löschen" button to delete
+        await page.locator('button:has-text("Löschen")').first().click();
+
+        // Click the confirmation "Löschen" button
+        await page.locator('button:has-text("Löschen")').last().click();
+    }
 
     // Wait for observation
     await page.waitForTimeout(0);

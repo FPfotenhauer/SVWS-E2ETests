@@ -85,7 +85,7 @@ npm run report
 Die Tests verwenden einen intelligenten Reset-Mechanismus:
 
 1. **Originale Werte erfassen**: Vor jedem Test werden die ursprünglichen Werte der zu ändernden Felder gespeichert
-2. **Test ausführen**: Felder werden bearbeitet und auto-speichern automatisch
+2. **Test ausführen**: Felder werden bearbeitet und speichern automatisch
 3. **Automatisches Cleanup (Standard)**: Nach dem Test werden alle Felder auf ihre Originalwerte zurückgesetzt
 4. **Optional: Änderungen beibehalten**: Mit `KEEP_TEST_DATA=true` bleiben die Teständerungen sichtbar für manuelle Verifikation
 
@@ -145,7 +145,7 @@ npx playwright test tests/student-phone-test.spec.ts
 
 # Nur Sonstiges-Tab-Tests (Vermerke, Einwilligungen, Lernplattformen)
 npx playwright test tests/student-miscellaneous-notes.spec.ts
-html/body/div/div/div[3]/div[2]/div/div[3]/div/div[2]/div[2]/div[5]/div[1]/input
+
 # Nur Erziehungsberechtigte-Tests (Eltern/Erziehungsberechtigte)
 npx playwright test tests/student-parents-test.spec.ts
 
@@ -221,92 +221,6 @@ Die Test-Suite folgt einem **minimalen, fokussierten Ansatz**:
 - **Snapshot-Verifikation**: Input-Werte werden direkt nach Speicherung verifiziert
 - **Abhängige Felder**: Bedingte Feld-Aktivierung wird getestet (z.B. Migrationshintergrund)
 
-### Getestete Felder
-
-#### Basis-Informationen
-```
-✅ Nachname (Textinput)
-✅ Rufname (Textinput)
-✅ Alle Vornamen (Textinput)
-✅ Geburtsort (Textinput)
-✅ Geburtsname (Textinput)
-✅ Geschlecht (Combobox: männlich, weiblich, divers - zufällig gewählt)
-✅ Geburtsdatum (HTML Date Input: 2000-12-31)
-```
-
-#### Staatsangehörigkeit
-```
-✅ 1. Staatsangehörigkeit (Combobox mit 200+ Optionen: "jamaikanisch")
-✅ 2. Staatsangehörigkeit (Combobox mit 200+ Optionen: "laotisch") - siehe Bekannte Einschränkungen
-```
-
-#### Kontaktdaten
-```
-✅ Straße (Textinput: "Teststraße 123")
-✅ Wohnort (Combobox: "42287 Wuppertal")
-✅ Ortsteil (Combobox: "Barmen")
-✅ Telefon (Textinput: "555555")
-✅ Mobil oder Fax (Textinput: "555555")
-✅ Private E-Mail-Adresse (Email Input mit Zeitstempel)
-✅ Schulische E-Mail-Adresse (Email Input mit Zeitstempel)
-```
-
-#### Religion
-```
-✅ Konfession (Combobox: "Testkonfession")
-✅ Konfession aufs Zeugnis (Checkbox - wird getoggled)
-✅ Abmeldung vom Religionsunterricht (Date Input: aktuelles Datum)
-✅ Wiederanmeldung (Date Input: aktuelles Datum)
-```
-
-#### Migrationshintergrund (Abhängige Felder)
-```
-✅ Migrationshintergrund vorhanden (Checkbox - muss aktiviert sein)
-  └─ Wenn aktiviert, werden folgende Felder freigegeben:
-     ✅ Zuzugsjahr (Textinput yyyy: aktuelles Jahr)
-     ✅ Geburtsland (Combobox: "Fidschi")
-     ✅ Geburtsland Mutter (Combobox: "Fidschi")
-     ✅ Geburtsland Vater (Combobox: "Fidschi")
-     ✅ Verkehrssprache (Combobox: "Fidschi")
-```
-
-#### Sonstiges-Tab (Vermerke, Einwilligungen, Lernplattformen)
-```
-✅ Vermerke: Neuen Vermerk hinzufügen
-   ✅ Vermerk-Text (Textarea mit Zeitstempel)
-   ✅ Vermerk-Typ (Combobox: zufällige Auswahl aus Sportbefreiung, Laufbahn-Bemerkung, Corona-Bemerkung, etc.)
-   ✅ Automatische Löschung (Notes werden nach dem Test gelöscht)
-
-✅ Einwilligungen: Verwendung Foto
-   ✅ Abgefragt (Checkbox)
-   ✅ Zugestimmt (Checkbox)
-
-✅ Lernplattformen: Einwilligung Abgefragt und Nutzung
-   ✅ Logineo NRW (Abgefragt + Nutzung Checkboxes)
-   ✅ IServ (Abgefragt + Nutzung Checkboxes)
-   ✅ MNS Pro (Abgefragt + Nutzung Checkboxes)
-   ✅ Automatisches Zurücksetzen aller Checkboxes nach Test
-```
-
-#### Erziehungsberechtigte (Eltern/Guardians)
-```
-✅ Navigation zum Tab "Erziehungsberechtigte"
-✅ Auswahl des ersten Erziehungsberechtigten aus der Liste
-✅ Erzieherart (Combobox: "Testart" - Custom-Combobox mit Option-Liste)
-✅ Anrede (Textinput: "Testanrede")
-✅ Titel (Textinput: "Testtitel")
-✅ Name (Textinput: "Testname-{timestamp}")
-✅ Vorname (Textinput: "Testvorname-{timestamp}")
-✅ E-Mail-Adresse (Email Input: "Testmail-{timestamp}@example.com")
-✅ Straße und Hausnummer (Textinput: "Teststrasse-{timestamp}")
-✅ Staatsangehörigkeit (Combobox: "Australien" - mit komplexer Option-Liste)
-✅ Wohnort (Combobox: "42287 Wuppertal" - mit force-click für bestehende Werte)
-✅ Bemerkungen (Textarea: "Dies ist eine Testbemerkung für die automatisierten Tests.")
-✅ Automatisches Speichern (Auto-Save nach Feldänderungen)
-✅ Automatisches Zurücksetzen aller 10 Felder auf Original-Werte
-✅ Performance-Optimierung: fill() statt keyboard.type() für schnellere Testausführung
-✅ Robuste Combobox-Handhabung: force-click für Felder mit angezeigten Werten
-✅ Textarea-Unterstützung: Parent-Container-Filter für Textarea-Felder mit Tab-Taste zum Speichern
 ```
 
 ### Bekannte Einschränkungen
@@ -505,61 +419,6 @@ npm run test:ui
 - Der Ordner `debug-images` ist via .gitignore vom Commit ausgeschlossen
 - Beispiel: debug-minimal-before-save.png
 
-## 📈 Erweiterung der Test-Suite
-
-### Workflow zum Hinzufügen neuer Felder
-
-1. **Feld zu `student-editvalues.spec.ts` hinzufügen:**
-   ```typescript
-   // Originalwert vor dem Test erfassen
-   const straße = await page.locator('[data-testid="straße"]').inputValue();
-   originalValues.straße = straße;
-   
-   // Feld im Test ändern
-   await page.fill('[data-testid="straße"]', 'Teststraße 123');
-   
-   // Wird automatisch in resetTestData wiederhergestellt
-   ```
-
-2. **Reset-Logik in `test-data.ts` aktualisieren:**
-   ```typescript
-   // Im resetTestData function:
-   try {
-     const straßeField = page.locator('[data-testid="straße"]');
-     if (await straßeField.isVisible()) {
-       await straßeField.fill(originalValues.straße);
-       await page.waitForTimeout(1000); // Auto-save warten
-       console.log(`✓ Restored Straße to "${originalValues.straße}"`);
-     }
-   } catch (e) {
-     console.log(`⚠ Could not restore Straße: ${e.message}`);
-   }
-   ```
-
-3. **Test ausführen und verifizieren:**
-   ```bash
-   # Mit Beibehaltung für Verifikation
-   KEEP_TEST_DATA=true npm test
-   
-   # Normal ausführen für Auto-Reset Test
-   npm test
-   ```
-
-### Geplante Feld-Erweiterungen
-
-Bereits implementierte Felder (26+):
-- [x] Basis-Informationen (Nachname, Rufname, Alle Vornamen, Geburtsort, Geburtsname, Geschlecht, Geburtsdatum)
-- [x] Staatsangehörigkeit (1. und 2.)
-- [x] Kontaktdaten (Straße, Wohnort, Ortsteil, Telefon, Mobil/Fax, E-Mail privat, E-Mail schulisch)
-- [x] Religion (Konfession, Konfession aufs Zeugnis, Abmeldung/Wiederanmeldung vom Religionsunterricht)
-- [x] Migrationshintergrund (Checkbox, Zuzugsjahr, Geburtsland, Geburtsland Mutter/Vater, Verkehrssprache)
-- [x] Telefonnummern Modal (Telefonart, Telefonnummer, Bemerkung, Gesperrt-Status) - siehe Bekannte Einschränkungen
-
-Weitere mögliche Erweiterungen:
-- [ ] Zusätzliche Adressfelder
-- [ ] Schullaufbahn-Daten
-- [ ] Noten und Leistungen
-- [ ] Fehlzeiten
 
 ## 🤝 Beitrag
 

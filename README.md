@@ -38,6 +38,8 @@ Dieses Repository enthält eine umfassende E2E-Test-Suite für den SVWS (Schulve
 - ✅ **Kataloge - Konfessionen**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit Konfessionen-spezifischen Feldern
 - ✅ **Kataloge - Lernplattformen**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit Lernplattformen-spezifischen Feldern
 - ✅ **Kataloge - Orte**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit Orte-spezifischen Feldern
+- ✅ **Kataloge - Ortsteile**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit Ortsteile-spezifischen Feldern
+- ✅ **Kataloge - Schulen**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit Schulen-spezifischen Feldern
 - ✅ **Lehrkräfte - Lehrer hinzufügen**: Vollständiger Lebenszyklus für das Hinzufügen neuer Lehrkräfte mit umfassender Feldabdeckung
 - ✅ **Lehrkräfte - Lehrer bearbeiten**: Bearbeitung von Lehrer-Daten mit automatischem Speichern und Feldvalidierung
 - 🔄 **Schüler erstellen**: Geplant
@@ -171,6 +173,8 @@ npx playwright test tests/catalog-kindergaerten-test.spec.ts
 npx playwright test tests/catalog-konfessionen-test.spec.ts
 npx playwright test tests/catalog-lernplattformen-test.spec.ts
 npx playwright test tests/catalog-orte-test.spec.ts
+npx playwright test tests/catalog-ortsteile-test.spec.ts
+npx playwright test tests/catalog-schulen-test.spec.ts
 
 # Nur in Chromium
 npx playwright test --project=chromium
@@ -209,7 +213,9 @@ SVWS-E2ETests/
 │   ├── catalog-kindergaerten-test.spec.ts # Kataloge - Kindergärten Tests
 │   ├── catalog-konfessionen-test.spec.ts # Kataloge - Konfessionen Tests
 │   ├── catalog-lernplattformen-test.spec.ts # Kataloge - Lernplattformen Tests
-│   └── catalog-orte-test.spec.ts # Kataloge - Orte Tests
+│   ├── catalog-orte-test.spec.ts # Kataloge - Orte Tests
+│   ├── catalog-ortsteile-test.spec.ts # Kataloge - Ortsteile Tests
+│   └── catalog-schulen-test.spec.ts # Kataloge - Schulen Tests
 ├── playwright.config.ts               # Playwright-Konfiguration (Chromium + Firefox)
 ├── tsconfig.json                      # TypeScript-Konfiguration
 ├── package.json                       # Abhängigkeiten und Skripte

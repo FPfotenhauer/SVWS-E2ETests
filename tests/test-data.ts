@@ -331,7 +331,7 @@ export async function resetTestData(page: any, originalValues: any = {}) {
             .or(page.locator('input[role="combobox"][aria-label*="ohnort"]').first());
           try {
             if (await townField.isVisible({ timeout: 500 })) {
-              await townField.click();
+              await townField.click({ force: true });
               await page.waitForTimeout(300);
               let found = false;
               const options = page.getByRole('option');

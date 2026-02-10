@@ -338,19 +338,14 @@ test.describe('Student minimal edit', () => {
     }
 
     // Fill Wohnort (combobox)
-    const townField = page.getByRole('combobox', { name: /wohnort/i }).first()
-      .or(page.locator('input[role="combobox"][aria-label*="ohnort"]').first());
-    if (await townField.isVisible({ timeout: 1000 })) {
-      await townField.click();
-      await page.waitForTimeout(300);
-      const townOption = page.getByRole('option', { name: new RegExp('42287.*wuppertal', 'i') }).first();
-      if (await townOption.isVisible({ timeout: 1000 })) {
-        await townOption.click();
-        console.log('Wohnort set to "42287 Wuppertal" (combobox)');
-      } else {
-        console.log('Wohnort option "42287 Wuppertal" not found');
-      }
-    }
+    const townField = page.getByRole('combobox', { name: 'Wohnort' });      
+    await townField.click({ force: true });
+    await page.keyboard.type('42287');
+    await page.waitForTimeout(500); // Wait for options to filter
+    // Select the option with value "42287 Wuppertal"
+    await page.locator('[role="option"]').filter({ hasText: '42287 Wuppertal' }).click();
+    console.log('Wohnort set to "42287 Wuppertal"');
+    await page.keyboard.press('Tab');
 
     // Fill Ortsteil (combobox) → type filter then select
     const districtField = page.getByRole('combobox', { name: /ortsteil|stadtteil|bezirk/i }).first()

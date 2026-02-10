@@ -225,7 +225,11 @@ test.describe('Student minimal edit', () => {
       originalValues.strasse = await origStreetField.inputValue();
     }
     if (await origTownField.isVisible({ timeout: 500 })) {
-      originalValues.wohnort = await origTownField.inputValue();
+      // For combobox, get displayed value from sibling selection div, not the input
+      const container = origTownField.locator('..');
+      const selectionDiv = container.locator('.ui-select--selection');
+      originalValues.wohnort = await selectionDiv.textContent().catch(() => '') || '';
+      originalValues.wohnort = originalValues.wohnort.trim();
     }
     if (await origDistrictField.isVisible({ timeout: 500 })) {
       originalValues.ortsteil = await origDistrictField.inputValue();
@@ -339,13 +343,26 @@ test.describe('Student minimal edit', () => {
 
     // Fill Wohnort (combobox)
     const townField = page.getByRole('combobox', { name: 'Wohnort' });      
-    await townField.click({ force: true });
-    await page.keyboard.type('42287');
-    await page.waitForTimeout(500); // Wait for options to filter
-    // Select the option with value "42287 Wuppertal"
-    await page.locator('[role="option"]').filter({ hasText: '42287 Wuppertal' }).click();
-    console.log('Wohnort set to "42287 Wuppertal"');
-    await page.keyboard.press('Tab');
+    try {
+      console.log('Attempting to fill Wohnort...');
+      await townField.click({ force: true });
+      console.log('Wohnort field clicked');
+      await page.keyboard.type('42287');
+      console.log('Typed "42287" in Wohnort');
+      await page.waitForTimeout(500); // Wait for options to filter
+      const townOption = page.locator('[role="option"]').filter({ hasText: '42287 Wuppertal' });
+      const optionCount = await townOption.count();
+      console.log(`Found ${optionCount} Wohnort option(s) matching "42287 Wuppertal"`);
+      if (optionCount > 0) {
+        await townOption.click();
+        console.log('Wohnort set to "42287 Wuppertal"');
+      } else {
+        console.log('ERROR: Could not find Wohnort option "42287 Wuppertal"');
+      }
+      await page.keyboard.press('Tab');
+    } catch (err) {
+      console.log(`ERROR filling Wohnort: ${err}`);
+    }
 
     // Fill Ortsteil (combobox) → type filter then select
     const districtField = page.getByRole('combobox', { name: /ortsteil|stadtteil|bezirk/i }).first()

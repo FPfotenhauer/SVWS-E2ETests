@@ -17,6 +17,7 @@ Dieses Repository enthält eine umfassende E2E-Test-Suite für den SVWS (Schulve
 - ✅ **Sonstiges-Tab (Vermerke, Einwilligungen, Lernplattformen)**: Erstellen von Vermerken, Auswahl von Vermerk-Typen, Verwaltung von Foto-Einwilligungen, Aktivierung von Lernplattform-Zustimmungen
 - ✅ **Erziehungsberechtigte**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Löschen). Tests für Änderungen an Bestandsdaten sowie Neuanlage via Modal mit komplexer Validierung (Combobox-Abhängigkeiten wie Wohnort/Ortsteil)
 - ✅ **Schüler - Eltern hinzufügen**: Vollständiger Lebenszyklus für das Hinzufügen neuer Erziehungsberechtigter zu Schülern
+- ✅ **Schüler - Förderempfehlungen**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit umfassender Feldabdeckung (Betroffene Fächer, 8 Textfelder, Daten, Checkboxen)
 - ✅ **Automatisches Cleanup**: Testdaten werden nach Tests automatisch zurückgesetzt (optional behalten mit KEEP_TEST_DATA=true)
 - ✅ **Cross-Browser Testing**: Tests laufen auf Chromium und Firefox
 - ✅ **Feldabdeckung**: Umfassende Tests für Text-, Combobox-, Date-, Checkbox- und Modal-Felder

@@ -64,8 +64,8 @@ test.describe('Kataloge - Ortsteile', () => {
     await ortsteilNeuInput.press('Tab');
 
     // Select new Wohnort from the combobox
-    const ortNeuCombo = page.getByRole('combobox', { name: 'Wohnort' });
-    await ortNeuCombo.click();
+    const ortNeuCombo = page.getByRole('combobox', { name: 'Ort' });
+    await ortNeuCombo.click({ force: true });
     // Select the option with value "42285 Wuppertal"
     await page.locator('[role="option"]').getByText('42285 Wuppertal', { exact: true }).click();
     await ortNeuCombo.press('Tab');
@@ -74,12 +74,12 @@ test.describe('Kataloge - Ortsteile', () => {
     const sortierungNeuInput = page.getByLabel('Sortierung');
     await sortierungNeuInput.waitFor({ state: 'visible' });
     await sortierungNeuInput.fill('11');
-    await sortierungNeuInput.press('Tab');
+    await sortierungNeuInput.press('Enter');
 
     if (!keepTestData) {
 
         // Go to the checkbox after saving
-        const postSaveCheckbox = page.locator('xpath=/html/body/div/div/div[3]/div[2]/div/div[3]/div/div[2]/div[2]/div[1]/div[1]/input');
+        const postSaveCheckbox = page.locator('xpath=/html/body/div/div/div[3]/div[2]/div/div[3]/div[2]/div[2]/div[2]/div[1]/input');
         await postSaveCheckbox.check();
 
         // Click the "Löschen" button to delete
@@ -87,6 +87,9 @@ test.describe('Kataloge - Ortsteile', () => {
 
         // Click the confirmation "Löschen" button
         await page.locator('button:has-text("Löschen")').last().click();
+
+        // Click the confirmation "Ja" button
+        await page.locator('button:has-text("Ja")').last().click();
     }
 
     // Wait for observation

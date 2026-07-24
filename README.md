@@ -45,6 +45,8 @@ Dieses Repository enthält eine umfassende E2E-Test-Suite für den SVWS (Schulve
 - ✅ **Kataloge - Vermerkarten**: Vollständiger Lebenszyklus (Erstellen, Bearbeiten, Speichern, Löschen) mit Vermerkarten-spezifischen Feldern
 - ✅ **Lehrkräfte - Lehrer hinzufügen**: Vollständiger Lebenszyklus für das Hinzufügen neuer Lehrkräfte mit umfassender Feldabdeckung
 - ✅ **Lehrkräfte - Lehrer bearbeiten**: Bearbeitung von Lehrer-Daten mit automatischem Speichern und Feldvalidierung
+- ✅ **Schüler - Schulbescheinigung drucken**: Zufälligen Schüler auswählen, PDF-Druck anstoßen und den Download verifizieren
+- ✅ **Lasttest - Schulbescheinigung drucken**: Konfigurierbar viele parallele, leicht versetzte Druckanfragen gegen den Server
 - 🔄 **Schüler erstellen**: Geplant
 - 🔄 **Schüler löschen**: Geplant
 
@@ -161,6 +163,12 @@ npx playwright test tests/student-addparent-test.spec.ts
 # Nur Lehrkräfte-Tests
 npx playwright test tests/teacher-addteacher-test.spec.ts tests/teacher-editvalues-test.spec.ts
 
+# Nur Schulbescheinigung-Druck-Test
+npx playwright test tests/student-print-schulbescheinigung-test.spec.ts
+
+# Lasttest für den Schulbescheinigung-Druck (siehe Abschnitt "Lasttest" unten)
+npx playwright test tests/student-print-schulbescheinigung-load-test.spec.ts
+
 # Nur Katalog-Tests (alle)
 npx playwright test tests/catalog-*.spec.ts
 
@@ -188,6 +196,29 @@ npx playwright test --project=chromium
 npx playwright test --project=firefox
 ```
 
+### Lasttest: Schulbescheinigung drucken
+
+`student-print-schulbescheinigung-load-test.spec.ts` meldet sich mehrfach parallel an und lässt jede Sitzung für einen zufälligen Schüler die Schulbescheinigung drucken, um den Server unter Last zu prüfen (Antwortzeiten, Fehlerquote). Damit ein einzelner Browser-Prozess nicht selbst zum Flaschenhals wird, verteilt der Test die parallelen Sitzungen auf mehrere separate Firefox-Prozesse.
+
+Über Umgebungsvariablen einstellbar:
+
+| Variable | Bedeutung | Standard |
+|---|---|---|
+| `LOAD_TEST_CONCURRENCY` | Anzahl paralleler Anmeldungen/Druckvorgänge | `5` |
+| `LOAD_TEST_STAGGER_MS` | Zeitversatz (ms) zwischen dem Start je zweier Durchläufe | `250` |
+| `LOAD_TEST_BROWSERS` | Anzahl separater Browser-Prozesse, auf die die Durchläufe verteilt werden | `10` |
+
+```bash
+# Standard: 5 parallele Durchläufe, 250ms Versatz
+npx playwright test tests/student-print-schulbescheinigung-load-test.spec.ts
+
+# 200 parallele Anfragen, verteilt auf 10 Browser-Prozesse, 250ms Versatz
+LOAD_TEST_CONCURRENCY=200 LOAD_TEST_BROWSERS=10 LOAD_TEST_STAGGER_MS=250 \
+  npx playwright test tests/student-print-schulbescheinigung-load-test.spec.ts
+```
+
+Am Ende gibt der Test eine Zusammenfassung aus (Anzahl Erfolge/Fehler, min/max/durchschnittliche Dauer je Durchlauf) und schlägt fehl, sobald mindestens ein Durchlauf einen Fehler wirft.
+
 ## 🏗️ Projektstruktur
 
 ```
@@ -195,7 +226,10 @@ SVWS-E2ETests/
 ├── tests/
 │   ├── fixtures.ts                    # Login und Navigations-Helper
 │   ├── test-data.ts                   # Reset und Seeding-Utilities
+│   ├── schulbescheinigung-flow.ts     # Gemeinsamer Ablauf für Schulbescheinigung-Tests (Login, Druck, Logout)
 │   ├── student-editvalues.spec.ts     # Schüler-Bearbeitungs-Tests (26+ Felder)
+│   ├── student-print-schulbescheinigung-test.spec.ts # Schulbescheinigung-Druck-Test
+│   ├── student-print-schulbescheinigung-load-test.spec.ts # Lasttest für Schulbescheinigung-Druck
 │   ├── student-phone-test.spec.ts     # Telefonnummern-Modal Tests
 │   ├── student-miscellaneous-notes.spec.ts  # Sonstiges-Tab Tests (Vermerke, Einwilligungen, Lernplattformen)
 │   ├── student-parents-test.spec.ts   # Erziehungsberechtigte-Tests (Eltern/Guardians)
